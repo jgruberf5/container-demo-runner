@@ -37,6 +37,9 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
+# Python virtual environment
+.venv
+
 # Unit test / coverage reports
 htmlcov/
 .tox/
