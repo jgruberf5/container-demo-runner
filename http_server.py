@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
 
 import json
+import yaml
 import os
 import socket
 import re
 
 from flask import Flask, request, render_template, Response
 
-CONFIG_FILE = os.getenv('CONFIG_FILE', './config.json')
+CONFIG_FILE = os.getenv('CONFIG_FILE', './config.yaml')
+if os.path.exists('/etc/config.yaml'):
+    CONFIG_FILE = '/etc/config.yaml'
 
 NAMESPACE_FILE = '/var/run/secrets/kubernetes.io/serviceaccount/namespace'
 
 config = {}
 
-with open(CONFIG_FILE, 'r') as config_json:
-    config = json.load(config_json)
+with open(CONFIG_FILE, 'r') as config_yaml:
+    config = yaml.safe_load(config_yaml)
 
 app = Flask(__name__)
 
