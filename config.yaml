@@ -16,3 +16,4 @@ allowed_commands:
 - "^curl"
 - "^whois"
 - "^kubectl"
+- "^iperf"
