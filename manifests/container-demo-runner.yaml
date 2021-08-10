@@ -41,13 +41,13 @@ spec:
         volumeMounts:
           - name: container-demo-config-volume
             mountPath: /etc/container-demo-runner
-      env:
-      - name: HTTP_CLIENT_PORT
-        value: 31080
-      - name: WS_CLIENT_PORT
-        value: 31678
-      - name: IPERF_CLIENT_PORT
-        value: 31001
+        env:
+          - name: HTTP_CLIENT_PORT
+            value: 31080
+          - name: WS_CLIENT_PORT
+            value: 31678
+          - name: IPERF_CLIENT_PORT
+            value: 31001
 ---
 apiVersion: v1
 kind: Service
