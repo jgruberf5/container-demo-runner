@@ -6,6 +6,7 @@ http_listen_port: 8080
 allowed_commands:
 - "^ping"
 - "^cat /etc/hosts"
+- "^cat /etc/resolv.conf"
 - "^ip route$"
 - "^ip addr$"
 - "^ip link$"
