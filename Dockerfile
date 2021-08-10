@@ -7,6 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
+    apt-transport-https \
     ca-certificates \
     iputils-ping \
     dnsutils \
@@ -14,13 +15,17 @@ RUN apt-get update && \
     net-tools \
     iperf \
     traceroute \
-    kubectl \
     python3-pycurl \
     python3-yaml \
     python3-flask \
     python3-websockets \
     iproute2 \
     git
+
+RUN curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list && \
+    apt-get update && \
+    apt-get install -u kubectl
 
 RUN git clone https://github.com/jgruberf5/container-demo-runner.git
 
