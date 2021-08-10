@@ -21,8 +21,9 @@ if os.path.exists(CONFIG_MAP_DIR):
     for ck in config.keys():
         if os.path.exists("%s/%s" % (CONFIG_MAP_DIR, ck)):
             with open("%s/%s" % (CONFIG_MAP_DIR, ck), 'r') as cmv:
+                cv = cmv.read()
                 if isinstance(config[ck], list):
-                    cv = json.loads(cmv.read)
+                    cv = json.loads(cmv.read())
                 print('loading config setting: %s from ConfigMap value: %s' % (ck, cv))
                 config[ck] = cv
 
