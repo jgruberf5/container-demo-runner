@@ -22,9 +22,18 @@ if os.path.exists(CONFIG_MAP_DIR):
             with open("%s/%s" % (CONFIG_MAP_DIR, ck), 'r') as cmv:
                 cv = cmv.read()
                 if isinstance(config[ck], list):
-                    cv = json.loads(cmv.read())
-                print('loading config setting: %s from ConfigMap value: %s' % (ck, cv))
-                config[ck] = cv
+                    try:
+                        cv = json.loads(cmv.read())
+                        print(
+                            'loading config setting: %s from ConfigMap value: %s' % (ck, cv))
+                        config[ck] = cv
+                    except json.JSONDecodeError as jde:
+                        print('error reading %s from ConfigMap: ' % (ck, jde))
+                else:
+                    cv = cmv.read()
+                    print(
+                        'loading config setting: %s from ConfigMap value: %s' % (ck, cv))
+                    config[ck] = cv
 
 
 async def _stream_to_ws(stream, header, socket):
