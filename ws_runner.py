@@ -31,7 +31,6 @@ if os.path.exists(CONFIG_MAP_DIR):
                     except json.JSONDecodeError as jde:
                         print('error reading %s from ConfigMap: ' % (ck, jde))
                 else:
-                    cv = cmv.read()
                     print(
                         'loading config setting: %s from ConfigMap value: %s' % (ck, cv))
                     config[ck] = cv
