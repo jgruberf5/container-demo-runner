@@ -76,6 +76,6 @@ async def runner(socket, path='/'):
 
 
 start_server = websockets.serve(
-    runner, config['ws_listen_address'], config['ws_listen_port'])
+    runner, config['ws_listen_address'], int(config['ws_listen_port']))
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()

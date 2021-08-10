@@ -63,7 +63,7 @@ def runner_ui():
         with open(NAMESPACE_FILE, 'r') as nsf:
             hostname = "%s/%s" % (re.sub(r"[\n\t\s]*",
                                   "", nsf.read()), hostname)
-    port = os.getenv('WS_CLIENT_PORT', config['ws_listen_port'])
+    port = int(os.getenv('WS_CLIENT_PORT', config['ws_listen_port']))
     return render_template(
         'index.html', host=host, port=port, hostname=hostname)
 
@@ -87,4 +87,4 @@ def get_resource(path):  # pragma: no cover
 
 if __name__ == "__main__":
     app.run(host=config['http_listen_address'],
-            port=config['http_listen_port'])
+            port=int(config['http_listen_port']))
