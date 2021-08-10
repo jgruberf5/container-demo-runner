@@ -9,13 +9,21 @@ import os
 import re
 
 CONFIG_FILE = os.getenv('CONFIG_FILE', './config.yaml')
-if os.path.exists('/etc/config.yaml'):
-    CONFIG_FILE = '/etc/config.yaml'
+CONFIG_MAP_DIR = '/etc/container-demo-runner'
 
 config = {}
 
 with open(CONFIG_FILE, 'r') as config_yaml:
     config = yaml.safe_load(config_yaml)
+
+if os.path.exists(CONFIG_MAP_DIR):
+    for ck in config.keys():
+        if os.path.exists("%s/%s" % (CONFIG_MAP_DIR, ck)):
+            with open("%s/%s" % (CONFIG_MAP_DIR, ck), 'r') as cmv:
+                if isinstance(config[ck], list):
+                    cv = json.loads(cmv.read)
+                print('loading config setting: %s from ConfigMap value: %s' % (ck, cv))
+                config[ck] = cv
 
 
 async def _stream_to_ws(stream, header, socket):
@@ -37,11 +45,11 @@ async def runner(socket, path='/'):
         allowed = False
         for regex in config['allowed_commands']:
             if re.match(r"%s" % regex, cmd):
-                allowed=True
+                allowed = True
                 break
         if allowed:
-            process=await asyncio.create_subprocess_shell(
-                cmd, stdout = asyncio.subprocess.PIPE, stderr = asyncio.subprocess.PIPE)
+            process = await asyncio.create_subprocess_shell(
+                cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
             await asyncio.wait([
                 _stream_to_ws(process.stdout, 'stdout', socket),
                 _stream_to_ws(process.stderr, 'stderr', socket)
@@ -56,7 +64,7 @@ async def runner(socket, path='/'):
         print("client disconnected")
 
 
-start_server=websockets.serve(
+start_server = websockets.serve(
     runner, config['ws_listen_address'], config['ws_listen_port'])
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()

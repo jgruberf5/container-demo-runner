@@ -9,9 +9,7 @@ import re
 from flask import Flask, request, render_template, Response
 
 CONFIG_FILE = os.getenv('CONFIG_FILE', './config.yaml')
-if os.path.exists('/etc/config.yaml'):
-    CONFIG_FILE = '/etc/config.yaml'
-
+CONFIG_MAP_DIR = '/etc/container-demo-runner'
 NAMESPACE_FILE = '/var/run/secrets/kubernetes.io/serviceaccount/namespace'
 
 config = {}
@@ -19,8 +17,16 @@ config = {}
 with open(CONFIG_FILE, 'r') as config_yaml:
     config = yaml.safe_load(config_yaml)
 
-app = Flask(__name__)
+if os.path.exists(CONFIG_MAP_DIR):
+    for ck in config.keys():
+        if os.path.exists("%s/%s" % (CONFIG_MAP_DIR, ck)):
+            with open("%s/%s" % (CONFIG_MAP_DIR, ck), 'r') as cmv:
+                if isinstance(config[ck], list):
+                    cv = json.loads(cmv.read)
+                print('loading config setting: %s from ConfigMap value: %s' % (ck, cv))
+                config[ck] = cv
 
+app = Flask(__name__)
 
 def root_dir():  # pragma: no cover
     return os.path.abspath(os.path.dirname(__file__))
@@ -44,8 +50,9 @@ def runner_ui():
         with open(NAMESPACE_FILE, 'r') as nsf:
             hostname = "%s/%s" % (re.sub(r"[\n\t\s]*",
                                   "", nsf.read()), hostname)
+    port = os.getenv('WS_CLIENT_PORT', config['ws_listen_port'])
     return render_template(
-        'index.html', host=host, port=config['ws_listen_port'], hostname=hostname)
+        'index.html', host=host, port=port, hostname=hostname)
 
 
 @app.route('/', defaults={'path': ''})
