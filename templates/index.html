@@ -1,0 +1,377 @@
+<!DOCTYPE html
+    PUBLIC '-//W3C//DTD XHTML 1.0 Transitional//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd'>
+
+<html xmlns="https://www.w3.org/1999/xhtml">
+
+<head>
+    <title>Demo Command Runner</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+    <meta http-equiv="Content-Script-Type" content="text/javascript" />
+    <meta name="robots" content="noindex">
+    <meta name="viewport" content="width=device-width, initial-scale=0.65">
+    <meta http-equiv="pragma" content="no-cache" />
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+        integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.18/dist/css/bootstrap-select.css"
+        crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
+        crossorigin="anonymous"></script>
+    <style>
+        input {
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="navbar navbar-expand-md navbar-dark bg-dark">
+            <div class="navbar-collapse collapse w-100 order-1 order-md-0 dual-collapse2">
+                <div class="navbar-nav mr-auto">
+                    <a href="/" class="navbar-brand d-flex align-items-center">
+                        <img src='/static/f5-logo-rgb.svg' height='32' width='32' style='margin-right: 20px;'>
+                        <strong>In Container Diagnostic Services</strong>
+                    </a>
+                </div>
+            </div>
+            <div class="navbar-collapse collapse w-100 order-3 dual-collapse2"></div>
+            <div class="navbar-text mr-auto text-nowrap">
+                <strong>{{ hostname }}</strong>
+            </div>
+        </div>
+        </div>
+        <div class="progress">
+            <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                aria-valuemax="100" id="progress" style="width:0%;"></div>
+        </div>
+    </header>
+    <div class="container m-2 border">
+        <div class="row">
+            <button id='iproute' class="btn btn-outline-secondary m-2">Show Routes</button>
+            <button id='ipaddr' class="btn btn-outline-secondary m-2">Show IP addresses</button>
+            <button id='showhosts' class="btn btn-outline-secondary m-2">Show Hosts</button>
+        </div>
+    </div>
+    <div class="container m-2 border" style='padding: 10px;'>
+        <h4 class='text-left text-secondary'>ICMP Ping</h4>
+        <div class='form-group row m-1' id='pinggroup'>
+            <label class='text-secondary m-2'>target:</label>
+            <div class='col-sm-5'>
+                <input class='form-control m-2' type='text' id='pinghost' placeholder='hostname or IP'>
+            </div>
+            <label class='text-secondary m-2'>count:</label>
+            <div class="col-sm-3 m-2">
+                <select class="form-control" id='pingcount'>
+                    <option value=1>1</option>
+                    <option value=5>5</option>
+                    <option value=10>10</option>
+                    <option value=50>50</option>
+                    <option value=0>Ongoing</option>
+                </select>
+            </div>
+            <div>
+                <button id='pingbutton' class="btn btn-outline-secondary m-2">Ping</button>
+            </div>
+        </div>
+    </div>
+    <div class="container m-2 border" style='padding: 10px;'>
+        <h4 class='text-left text-secondary'>DNS Lookup</h4>
+        <div class='form-group row m-1' id='dnsgroup'>
+            <label class='text-secondary m-2'>target:</label>
+            <div class="col-sm-5">
+                <input class='form-control m-2' type='text' id='dnshost' placeholder='FQDN'>
+            </div>
+            <label class='text-secondary m-2'>type:</label>
+            <div class="col-sm-3">
+                <select class="form-control m-2" id='dnstype'>
+                    <option value='A'>A</option>
+                    <option value='CNAME'>CNAME</option>
+                    <option value='PTR'>PTR</option>
+                    <option value='NS'>NS</option>
+                    <option value='SOA'>SOA</option>
+                    <option value='TXT'>TXT</option>
+                    <option value='SRV'>SRV</option>
+                    <option value='MX'>MX</option>
+                    <option value='ALIAS'>ALIAS</option>
+                    <option value='AAAA'>AAAA</option>
+                    <option value='ANY'>ANY</option>
+                </select>
+            </div>
+            <div>
+                <button id='dnsbutton' class="btn btn-outline-secondary m-2">Lookup</button>
+            </div>
+        </div>
+    </div>
+    <div class="container m-2 border" style='padding: 10px;'>
+        <h4 class='text-left text-secondary m-2'>HTTP GET (statistics)</h4>
+        <div class='form-group row m-1' id='httpgetgroup'>
+            <label class='text-secondary m-2'>target:</label>
+            <div class="col-sm-5">
+                <input class='form-control m-2' type='text' id='geturl' placeholder='URL'>
+            </div>
+            <div>
+                <button id='geturlbutton' class="btn btn-outline-secondary m-2">GET</button>
+            </div>
+        </div>
+    </div>
+    <div class="container m-2 border" style='padding: 10px;'>
+        <h4 class='text-left text-secondary'>Run Command</h4>
+        <div class='form-group row m-1' id='commandgroup'>
+            <label class='text-secondary m-2'>command:</label>
+            <div class="col-sm-8">
+                <input class='form-control m-2' type='text' id='genericcommand' placeholder='Command'>
+            </div>
+            <div>
+                <button id='genericcommandbutton' class="btn btn-outline-secondary m-2">Run Command</button>
+            </div>
+        </div>
+    </div>
+    <div class="container m-2 border" style='display: none; padding:10px;' id='outputs'>
+        <div class='mb-4 text-secondary' style='font-family: monospace' id='commandsend'></div>
+        <div id='stderr' style='display: none;'>
+            <div class='p-2 mb-2 text-white bg-danger'>Command Error</div>
+            <div class="p-2 row h-100 align-items-center">
+                <div id='commanderr'
+                    style='font-family: monospace; font-size: x-small; white-space: pre; padding: 10px; max-width: 80%; overflow: auto;'>
+                </div>
+            </div>
+        </div>
+        <div id='stdout' style='display: none;'>
+            <div class='p-2 mb-2 text-white bg-secondary'>Command Output</div>
+            <div class="p-2 row h-100 align-items-center">
+                <div id='commandout'
+                    style='font-family: monospace; font-size: x-small; white-space: pre; padding: 10px; max-width: 80%; overflow: auto;'>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+
+    </footer>
+    <script>
+
+        var commandRunning = false;
+
+        function wsConnect(cmd) {
+            var ws = new WebSocket("ws://{{ host }}:{{ port }}");
+            ws.onopen = function (e) {
+                console.log("connection open to ws://{{ host }}:{{ port }}");
+                if (cmd) {
+                    console.log('connection opened to server, running pending command: ' + JSON.stringify(cmd));
+                    issueCmd(cmd);
+                }
+            };
+            ws.onclose = function (e) {
+                console.log("connection clsoed to ws://{{ host }}:{{ port }}");
+                socket = undefined;
+            };
+            ws.onerror = function (e) {
+                console.log("error from ws://{{ host }}:{{ port }}: " + JSON.stringify(e));
+                $('#outputs').show();
+                $('#stderr').show();
+                $('#commanderr').text('error communicating with command service');
+            };
+            ws.onmessage = function (e) {
+                console.log("message received from ws://{{ host }}:{{ port }}");
+                message = JSON.parse(e.data.toString());
+                if (message.stream == "stdout") {
+                    $('#stdout').show();
+                    $('#commandout').append(message.data);
+                }
+                if (message.stream == "stderr") {
+                    $('#stderr').show();
+                    $('#commanderr').append(message.data);
+                }
+                if (message.stream == "completed") {
+                    commandRunning = false;
+                    if (message.data == 0) {
+                        $('#stdout').show();
+                        $('#commandout').append('\n<b>command completed with return code:' + message.data + '</b>\n');
+                        stopSpin();
+                        resetUI();
+                    } else {
+                        $('#stderr').show();
+                        $('#commanderr').append('\n<b>command completed with return code:' + message.data + '</b>\n');
+                        stopSpin();
+                        resetUI();
+                    }
+                }
+            };
+            return ws;
+        }
+
+        function forceReconnect(cmd) {
+            commandRunning = false;
+            resetUI();
+            if (socket) { socket.close(); }
+            setTimeout(function () {
+                socket = wsConnect(cmd);
+            }, 2000);
+        }
+
+        function issueCmd(cmd) {
+            spin();
+            if (commandRunning) {
+                console.log('forcing closed connection to server during running command to issue command: ' + JSON.stringify(cmd));
+                forceReconnect(cmd);
+            } else if (socket && socket.readyState == WebSocket.OPEN) {
+                $('#outputs').show();
+                $('#stderr').hide();
+                $('#stdout').hide();
+                $('#commandsend').text(cmd.type + ' - ' + cmd.target);
+                $('#commanderr').text('');
+                $('#commandout').text('');
+                commandRunning = true;
+                socket.send(JSON.stringify(cmd));
+            } else {
+                forceReconnect(cmd);
+            }
+        };
+
+        function spin() {
+            $('#progress').css('width', '100%').addClass('progress-bar-stripped progress-bar-animated active');
+            $('#progress').html('<span class="spinner-border spinner-border-sm ml-auto"></span>');
+        }
+
+        function stopSpin() {
+            $('#progress').css('width', '0%').removeClass('progress-bar-stripped progress-bar-animated active').html('');
+        }
+
+        function resetUI() {
+            $('#pingbutton').removeClass('btn-danger').text('Ping');
+            $('#genericcommandbutton').removeClass('btn-danger').text('Run command');
+        }
+
+        let socket = undefined;
+
+        $(document).ready(function () {
+
+            $('#outputs').hide();
+
+            $('#iproute').click(function () {
+                let cmd = {
+                    type: 'ip route',
+                    target: 'localhost',
+                    cmd: [
+                        'ip',
+                        'route'
+                    ]
+                }
+                issueCmd(cmd);
+            });
+
+            $('#ipaddr').click(function () {
+                let cmd = {
+                    type: 'ip addr',
+                    target: 'localhost',
+                    cmd: [
+                        'ip',
+                        'addr'
+                    ]
+                }
+                issueCmd(cmd);
+            });
+
+            $('#showhosts').click(function () {
+                let cmd = {
+                    type: 'cat /etc/hosts',
+                    target: 'localhost',
+                    cmd: [
+                        'cat',
+                        '/etc/hosts'
+                    ]
+                }
+                issueCmd(cmd);
+            });
+
+            $('#pingbutton').click(function () {
+                if (commandRunning) {
+                    stopSpin();
+                    resetUI();
+                    forceReconnect();
+                    return;
+                }
+                let pingcount = $('#pingcount').val();
+                let cmd = {
+                    type: 'ping',
+                    target: $('#pinghost').val(),
+                    cmd: [
+                        'ping',
+                        $('#pinghost').val()
+                    ]
+                }
+                if (pingcount > 0) {
+                    cmd.cmd = [
+                        'ping',
+                        '-c',
+                        pingcount,
+                        $('#pinghost').val()
+                    ]
+                } else {
+                    $('#pingbutton').addClass('btn-danger').text('Stop');
+                }
+                issueCmd(cmd);
+            });
+
+            $('#dnsbutton').click(function () {
+                let recordType = $('#dnstype').val();
+                let cmd = {
+                    type: 'dig',
+                    target: $('#dnshost').val() + ' ' + recordType,
+                    cmd: [
+                        'dig',
+                        $('#dnshost').val(),
+                        recordType
+                    ]
+                }
+                issueCmd(cmd)
+            });
+
+            $('#geturlbutton').click(function () {
+                let cmd = {
+                    type: 'HTTP GET statistics',
+                    target: $('#geturl').val(),
+                    cmd: [
+                        'curl',
+                        '-H',
+                        'Connection: close',
+                        '-k',
+                        '-L',
+                        '-s',
+                        '-o',
+                        '/dev/null',
+                        '-w',
+                        ' http_status_code: %{http_code}\n content_type: %{content_type}%\n dns_resolution: %{time_namelookup}\n tcp_established: %{time_connect}\n ssl_handshake_done: %{time_appconnect}\n TTFB: %{time_starttransfer}\n speed_download: %{speed_download}\n speed_upload: %{speed_upload}\n total_time: %{time_total}\n size: %{size_download}\n\n',
+                        $('#geturl').val()
+                    ]
+                }
+                issueCmd(cmd)
+            });
+
+            $('#genericcommandbutton').click(function () {
+                if (commandRunning) {
+                    stopSpin();
+                    resetUI();
+                    forceReconnect();
+                    return;
+                }
+                let cmd = {
+                    type: 'Running Command',
+                    target: $('#genericcommand').val(),
+                    cmd: $('#genericcommand').val()
+                }
+                $('#genericcommandbutton').addClass('btn-danger').text('Stop');
+                issueCmd(cmd);
+            });
+        });
+
+    </script>
+</body>
+
+</html>
