@@ -15,6 +15,7 @@ RUN apt-get update && \
     nmap \
     bc \
     dnsutils \
+    jq \
     curl \
     net-tools \
     netcat \
