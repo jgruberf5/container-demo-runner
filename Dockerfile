@@ -13,6 +13,7 @@ RUN apt-get update && \
     tcptraceroute \
     hping3 \
     nmap \
+    bc \
     dnsutils \
     curl \
     net-tools \
