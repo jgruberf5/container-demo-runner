@@ -16,6 +16,7 @@ RUN apt-get update && \
     bc \
     dnsutils \
     jq \
+    apache2-utils \
     curl \
     net-tools \
     netcat \
