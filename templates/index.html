@@ -55,82 +55,153 @@
             <button id='iproute' class="btn btn-outline-secondary m-2">Show Routes</button>
             <button id='ipaddr' class="btn btn-outline-secondary m-2">Show IP addresses</button>
             <button id='showhosts' class="btn btn-outline-secondary m-2">Show Hosts</button>
+            <button id='showenv' class="btn btn-outline-secondary m-2">Show Environment</button>
         </div>
     </div>
-    <div class="container m-2 border" style='padding: 10px;'>
-        <h4 class='text-left text-secondary'>ICMP Ping</h4>
-        <div class='form-group row m-1' id='pinggroup'>
-            <label class='text-secondary m-2'>target:</label>
-            <div class='col-sm-5'>
-                <input class='form-control m-2' type='text' id='pinghost' placeholder='hostname or IP'>
+    <div class="accordion" id="accordionFunctions">
+        <div class="card">
+            <div class="card-header" id="headingFunctions">
+                <h5 class="mb-0">
+                    <button class="btn btn-outline-secondary m-2 collapsed" type="button" data-toggle="collapse"
+                        data-target="#collapsePing" aria-expanded="true" aria-controls="collapsePing">
+                        ICMP Ping
+                    </button>
+                    <button class="btn btn-outline-secondary m-2 collapsed" type="button" data-toggle="collapse"
+                        data-target="#collapseTCPing" aria-expanded="true" aria-controls="collapseTCPing">
+                        TCP Ping
+                    </button>
+                    <button class="btn btn-outline-secondary m-2 collapsed" type="button" data-toggle="collapse"
+                        data-target="#collapseDNS" aria-expanded="true" aria-controls="collapseDNS">
+                        DNS Lookup
+                    </button>
+                    <button class="btn btn-outline-secondary m-2 collapsed" type="button" data-toggle="collapse"
+                        data-target="#collapseHTTP" aria-expanded="true" aria-controls="collapseHTTP">
+                        HTTP GET (statistics)
+                    </button>
+                    <button class="btn btn-outline-secondary m-2 collapsed" type="button" data-toggle="collapse"
+                        data-target="#collapseCommand" aria-expanded="true" aria-controls="collapseCommand">
+                        Run Command
+                    </button>
+                </h5>
             </div>
-            <label class='text-secondary m-2'>count:</label>
-            <div class="col-sm-3 m-2">
-                <select class="form-control" id='pingcount'>
-                    <option value=1>1</option>
-                    <option value=5>5</option>
-                    <option value=10>10</option>
-                    <option value=50>50</option>
-                    <option value=0>Ongoing</option>
-                </select>
+
+            <div id="collapsePing" class="collapse" aria-labelledby="headingFunctions"
+                data-parent="#accordionFunctions">
+                <div class="card-body">
+                    <div class='form-group row m-1' id='pinggroup'>
+                        <label class='text-secondary m-2'>target:</label>
+                        <div class='col-sm-5'>
+                            <input class='form-control m-2' type='text' id='pinghost' placeholder='hostname or IP'>
+                        </div>
+                        <label class='text-secondary m-2'>count:</label>
+                        <div class="col-sm-3 m-2">
+                            <select class="form-control" id='pingcount'>
+                                <option value=1>1</option>
+                                <option value=5>5</option>
+                                <option value=10>10</option>
+                                <option value=50>50</option>
+                                <option value=0>Ongoing</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button id='pingbutton' class="btn btn-outline-secondary m-2">Ping</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div>
-                <button id='pingbutton' class="btn btn-outline-secondary m-2">Ping</button>
+
+            <div id="collapseTCPing" class="collapse" aria-labelledby="headingFunctions"
+                data-parent="#accordionFunctions">
+                <div class="card-body">
+                    <div class='form-group row m-1' id='tcpinggroup'>
+                        <label class='text-secondary m-2'>target:</label>
+                        <div class='col-sm-3'>
+                            <input class='form-control m-2' type='text' id='tcpinghost' placeholder='hostname or IP'>
+                        </div>
+                        <label class='text-secondary m-2'>dest port:</label>
+                        <div class='col-sm-2'>
+                            <input class='form-control m-2' type='text' id='tcpingport' placeholder='port'>
+                        </div>
+                        <label class='text-secondary m-2'>count:</label>
+                        <div class="col-sm-2 m-2">
+                            <select class="form-control" id='tcpingcount'>
+                                <option value=1>1</option>
+                                <option value=5>5</option>
+                                <option value=10>10</option>
+                                <option value=50>50</option>
+                                <option value=0>Ongoing</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button id='tcpingbutton' class="btn btn-outline-secondary m-2">TCP Ping</button>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <div id="collapseDNS" class="collapse" aria-labelledby="headingFunctions" data-parent="#accordionFunctions">
+                <div class="card-body">
+                    <div class='form-group row m-1' id='dnsgroup'>
+                        <label class='text-secondary m-2'>target:</label>
+                        <div class="col-sm-5">
+                            <input class='form-control m-2' type='text' id='dnshost' placeholder='FQDN'>
+                        </div>
+                        <label class='text-secondary m-2'>type:</label>
+                        <div class="col-sm-3">
+                            <select class="form-control m-2" id='dnstype'>
+                                <option value='A'>A</option>
+                                <option value='CNAME'>CNAME</option>
+                                <option value='PTR'>PTR</option>
+                                <option value='NS'>NS</option>
+                                <option value='SOA'>SOA</option>
+                                <option value='TXT'>TXT</option>
+                                <option value='SRV'>SRV</option>
+                                <option value='MX'>MX</option>
+                                <option value='ALIAS'>ALIAS</option>
+                                <option value='AAAA'>AAAA</option>
+                                <option value='ANY'>ANY</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button id='dnsbutton' class="btn btn-outline-secondary m-2">Lookup</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="collapseHTTP" class="collapse" aria-labelledby="headingFunctions"
+                data-parent="#accordionFunctions">
+                <div class="card-body">
+                    <div class='form-group row m-1' id='httpgetgroup'>
+                        <label class='text-secondary m-2'>target:</label>
+                        <div class="col-sm-5">
+                            <input class='form-control m-2' type='text' id='geturl' placeholder='URL'>
+                        </div>
+                        <div>
+                            <button id='geturlbutton' class="btn btn-outline-secondary m-2">GET</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="collapseCommand" class="collapse" aria-labelledby="headingFunctions"
+                data-parent="#accordionFunctions">
+                <div class="card-body">
+                    <div class='form-group row m-1' id='commandgroup'>
+                        <label class='text-secondary m-2'>command:</label>
+                        <div class="col-sm-8">
+                            <input class='form-control m-2' type='text' id='genericcommand' placeholder='Command'>
+                        </div>
+                        <div>
+                            <button id='genericcommandbutton' class="btn btn-outline-secondary m-2">Run Command</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
-    <div class="container m-2 border" style='padding: 10px;'>
-        <h4 class='text-left text-secondary'>DNS Lookup</h4>
-        <div class='form-group row m-1' id='dnsgroup'>
-            <label class='text-secondary m-2'>target:</label>
-            <div class="col-sm-5">
-                <input class='form-control m-2' type='text' id='dnshost' placeholder='FQDN'>
-            </div>
-            <label class='text-secondary m-2'>type:</label>
-            <div class="col-sm-3">
-                <select class="form-control m-2" id='dnstype'>
-                    <option value='A'>A</option>
-                    <option value='CNAME'>CNAME</option>
-                    <option value='PTR'>PTR</option>
-                    <option value='NS'>NS</option>
-                    <option value='SOA'>SOA</option>
-                    <option value='TXT'>TXT</option>
-                    <option value='SRV'>SRV</option>
-                    <option value='MX'>MX</option>
-                    <option value='ALIAS'>ALIAS</option>
-                    <option value='AAAA'>AAAA</option>
-                    <option value='ANY'>ANY</option>
-                </select>
-            </div>
-            <div>
-                <button id='dnsbutton' class="btn btn-outline-secondary m-2">Lookup</button>
-            </div>
-        </div>
-    </div>
-    <div class="container m-2 border" style='padding: 10px;'>
-        <h4 class='text-left text-secondary m-2'>HTTP GET (statistics)</h4>
-        <div class='form-group row m-1' id='httpgetgroup'>
-            <label class='text-secondary m-2'>target:</label>
-            <div class="col-sm-5">
-                <input class='form-control m-2' type='text' id='geturl' placeholder='URL'>
-            </div>
-            <div>
-                <button id='geturlbutton' class="btn btn-outline-secondary m-2">GET</button>
-            </div>
-        </div>
-    </div>
-    <div class="container m-2 border" style='padding: 10px;'>
-        <h4 class='text-left text-secondary'>Run Command</h4>
-        <div class='form-group row m-1' id='commandgroup'>
-            <label class='text-secondary m-2'>command:</label>
-            <div class="col-sm-8">
-                <input class='form-control m-2' type='text' id='genericcommand' placeholder='Command'>
-            </div>
-            <div>
-                <button id='genericcommandbutton' class="btn btn-outline-secondary m-2">Run Command</button>
-            </div>
-        </div>
-    </div>
+
     <div class="container m-2 border" style='display: none; padding:10px;' id='outputs'>
         <div class='mb-4 text-secondary' style='font-family: monospace' id='commandsend'></div>
         <div id='stderr' style='display: none;'>
@@ -245,6 +316,7 @@
 
         function resetUI() {
             $('#pingbutton').removeClass('btn-danger').text('Ping');
+            $('#tcpingbutton').removeClass('btn-danger').text('TCP Ping');
             $('#genericcommandbutton').removeClass('btn-danger').text('Run command');
         }
 
@@ -290,6 +362,17 @@
                 issueCmd(cmd);
             });
 
+            $('#showenv').click(function () {
+                let cmd = {
+                    type: 'env',
+                    target: 'localhost',
+                    cmd: [
+                        'env'
+                    ]
+                }
+                issueCmd(cmd);
+            });
+
             $('#pingbutton').click(function () {
                 if (commandRunning) {
                     stopSpin();
@@ -315,6 +398,38 @@
                     ]
                 } else {
                     $('#pingbutton').addClass('btn-danger').text('Stop');
+                }
+                issueCmd(cmd);
+            });
+
+
+            $('#tcpingbutton').click(function () {
+                if (commandRunning) {
+                    stopSpin();
+                    resetUI();
+                    forceReconnect();
+                    return;
+                }
+                let tcpingcount = $('#tcpingcount').val();
+                let cmd = {
+                    type: 'tcping',
+                    target: $('#tcpinghost').val(),
+                    cmd: [
+                        'tcping',
+                        $('#tcpinghost').val(),
+                        $('#tcpingport').val()
+                    ]
+                }
+                if (tcpingcount > 0) {
+                    cmd.cmd = [
+                        'tcping',
+                        '-x',
+                        tcpingcount,
+                        $('#tcpinghost').val(),
+                        $('#tcpingport').val()
+                    ]
+                } else {
+                    $('#tcpingbutton').addClass('btn-danger').text('Stop');
                 }
                 issueCmd(cmd);
             });

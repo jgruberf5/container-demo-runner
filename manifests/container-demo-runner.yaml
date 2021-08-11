@@ -4,7 +4,8 @@ metadata:
   name: container-demo-runner-config
 data:
   allowed_commands: |
-    ["^ping", "^cat /etc/hosts", "^cat /etc/resolv.conf", "^ip route$", "^ip addr$", "^ip link$", "^ip neigh", "^netstat", "^dig", "^traceroute", "^curl", "^whois", "^kubectl", "^iperf"]
+    ["^ping", "^cat /etc/hosts", "^cat /etc/resolv.conf", "^env$", "^ip route$", "^ip addr$", "^ip link$", "^ip neigh", "^netstat", "^dig", "^nc", "^tcping", "^traceroute", "^tcptraceroute", "^curl", "^whois", "^kubectl", "^iperf"]
+  
   http_listen_address: "0.0.0.0"
   http_listen_port: "8080"
   ws_listen_address: "0.0.0.0"

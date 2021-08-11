@@ -10,9 +10,13 @@ RUN apt-get update && \
     apt-transport-https \
     ca-certificates \
     iputils-ping \
+    tcptraceroute \
+    hping3 \
+    nmap \
     dnsutils \
     curl \
     net-tools \
+    netcat \
     iperf \
     traceroute \
     python3-pycurl \
@@ -21,6 +25,8 @@ RUN apt-get update && \
     python3-websockets \
     iproute2 \
     git
+
+RUN curl http://www.vdberg.org/~richard/tcpping -o /usr/bin/tcping && chmod 755 /usr/bin/tcping
 
 RUN curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list && \
