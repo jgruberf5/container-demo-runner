@@ -26,19 +26,48 @@ ws_listen_port: 5678
 http_listen_address: 0.0.0.0
 http_listen_port: 8080
 allowed_commands:
-- "^ping"
-- "^cat /etc/hosts"
-- "^ip route$"
-- "^ip addr$"
-- "^ip link$"
-- "^ip neigh"
-- "^netstat"
-- "^dig"
-- "^traceroute"
-- "^curl"
-- "^whois"
-- "^kubectl"
-- "^iperf"
+  - "^ping"
+  - "^cat /etc/hosts"
+  - "^cat /etc/resolv.conf"
+  - "^env$"
+  - "^ip route$"
+  - "^ip addr$"
+  - "^ip link$"
+  - "^ip neigh"
+  - "^netstat"
+  - "^dig"
+  - "^nc"
+  - "^ab"
+  - "^siege"
+  - "^tcping"
+  - "^traceroute"
+  - "^tcptraceroute"
+  - "^curl"
+  - "^whois"
+  - "^kubectl"
+  - "^iperf"
+host_entries: |
+  104.21.192.109    ifconfig.io
 ```
 
 The `allowed_commands` list is a list of regular expressions which each requested command will be mapped against before the command is executed within the container.
+
+When using in a K8s manifest YAML, create a JSON list using a multi-line text attribute to alter your `allowed_commands`.
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: container-demo-runner-config
+data:
+  http_listen_address: "0.0.0.0"
+  http_listen_port: "8080"
+  ws_listen_address: "0.0.0.0"
+  ws_listen_port: "5678"
+  allowed_commands: |
+    ["^ping", "^cat /etc/hosts", "^cat /etc/resolv.conf", "^env$", "^ip route$", "^ip addr$", "^ip link$", "^ip neigh", "^netstat", "^dig", "^nc", "^ab", "^siege", "^tcping", "^traceroute", "^tcptraceroute", "^curl", "^whois", "^kubectl", "^iperf"]
+  host_entries: |
+    104.21.192.109    ifconfig.io
+```
+
+The `host_entries` multi-line text attribute will be appended to `/etc/hosts`.
