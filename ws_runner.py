@@ -35,6 +35,11 @@ if os.path.exists(CONFIG_MAP_DIR):
                     config[ck] = cv
 
 
+if hasattr(config, 'host_entries'):
+    with open('/etc/hosts', 'a+') as eh:
+        eh.write(config['host_entries'])
+
+
 async def _stream_to_ws(stream, header, socket):
     while True:
         line = await stream.readline()
