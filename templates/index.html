@@ -39,9 +39,13 @@
                     </a>
                 </div>
             </div>
-            <div class="navbar-collapse collapse w-100 order-3 dual-collapse2"></div>
             <div class="navbar-text mr-auto text-nowrap">
                 <strong>{{ hostname }}</strong>
+            </div>
+            <div class="navbar-text mr-sm-0 m-2">
+                <span role='button' data-toggle="modal" data-target='#settingsModal'>
+                    <img src='/static/gear.svg'>
+                </span>
             </div>
         </div>
         </div>
@@ -50,6 +54,36 @@
                 aria-valuemax="100" id="progress" style="width:0%;"></div>
         </div>
     </header>
+    <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-slideout modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Command Server</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class='form-group row m-1' id='settingsgroup'>
+                        <label class='text-secondary m-2'>Host:</label>
+                        <div class='col-sm-12'>
+                            <input class='form-control m-2' type='text' id='wshost' />
+                        </div>
+
+                        <label class='text-secondary m-2'>port:</label>
+                        <div class="col-sm-12">
+                            <input class='form-control m-2' type='numeric' id='wsport' />
+                        </div>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <button type='button' class='btn btn-secondary' data-dismiss='modal'>Close</button>
+                    <button type='button' class='btn btn-danger' id='saveSettings'>Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="container m-2 border">
         <div class="row">
             <button id='iproute' class="btn btn-outline-secondary m-2">Show Routes</button>
@@ -228,28 +262,30 @@
     <script>
 
         var commandRunning = false;
+        var wsHost = '{{ host }}';
+        var wsPort = parseInt('{{ port }}');
 
         function wsConnect(cmd) {
-            var ws = new WebSocket("ws://{{ host }}:{{ port }}");
+            var ws = new WebSocket("ws://" + wsHost + ":" + wsPort);
             ws.onopen = function (e) {
-                console.log("connection open to ws://{{ host }}:{{ port }}");
+                console.log("connection open to ws://" + wsHost + ":" + wsPort);
                 if (cmd) {
                     console.log('connection opened to server, running pending command: ' + JSON.stringify(cmd));
                     issueCmd(cmd);
                 }
             };
             ws.onclose = function (e) {
-                console.log("connection clsoed to ws://{{ host }}:{{ port }}");
+                console.log("connection clsoed to ws://" + wsHost + ":" + wsPort);
                 socket = undefined;
             };
             ws.onerror = function (e) {
-                console.log("error from ws://{{ host }}:{{ port }}: " + JSON.stringify(e));
+                console.log("error from ws://" + wsHost + ":" + wsPort + "-" + JSON.stringify(e));
                 $('#outputs').show();
                 $('#stderr').show();
                 $('#commanderr').text('error communicating with command service');
             };
             ws.onmessage = function (e) {
-                console.log("message received from ws://{{ host }}:{{ port }}");
+                console.log("message received from ws://" + wsHost + ":" + wsPort);
                 message = JSON.parse(e.data.toString());
                 if (message.stream == "stdout") {
                     $('#stdout').show();
@@ -324,7 +360,17 @@
 
         $(document).ready(function () {
 
+            $('#wshost').val(wsHost);
+            $('#wsport').val(wsPort);
+
             $('#outputs').hide();
+
+            $('#saveSettings').click(function () {
+                wsHost = $('#wshost').val();
+                wsPort = parseInt($('#wsport').val());
+                $('#settingsModal').modal('hide');
+                forceReconnect();
+            });
 
             $('#iproute').click(function () {
                 let cmd = {
