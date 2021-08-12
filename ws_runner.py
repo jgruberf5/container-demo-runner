@@ -2,6 +2,7 @@
 
 import asyncio
 import websockets
+import socket
 import shlex
 import json
 import yaml
@@ -10,6 +11,7 @@ import re
 
 CONFIG_FILE = os.getenv('CONFIG_FILE', './config.yaml')
 CONFIG_MAP_DIR = '/etc/container-demo-runner'
+NAMESPACE_FILE = '/var/run/secrets/kubernetes.io/serviceaccount/namespace'
 
 config = {}
 
@@ -42,38 +44,47 @@ if 'host_entries' in config:
         eh.write(config['host_entries'])
 
 
-async def _stream_to_ws(stream, header, socket):
+async def _stream_to_ws(stream, header, websocket):
     while True:
         line = await stream.readline()
         if line:
-            await socket.send(json.dumps({'stream': header, 'data': line.decode()}))
+            await websocket.send(json.dumps({'stream': header, 'data': line.decode()}))
         else:
             break
 
 
-async def runner(socket, path='/'):
+async def runner(websocket, path='/'):
     try:
-        rawdata = await socket.recv()
+        rawdata = await websocket.recv()
         data = json.loads(rawdata)
-        cmd = data['cmd']
-        if isinstance(data['cmd'], list):
-            cmd = shlex.join(data['cmd'])
-        allowed = False
-        for regex in config['allowed_commands']:
-            if re.match(r"%s" % regex, cmd):
-                allowed = True
-                break
-        if allowed:
-            process = await asyncio.create_subprocess_shell(
-                cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            await asyncio.wait([
-                _stream_to_ws(process.stdout, 'stdout', socket),
-                _stream_to_ws(process.stderr, 'stderr', socket)
-            ])
-            await socket.send(json.dumps({'stream': 'completed', 'data': process.returncode}))
+        if data['type'] == 'variable':
+            if data['target'] == 'wsHostname':
+                hostname = socket.gethostname()
+                if os.path.exists(NAMESPACE_FILE):
+                    with open(NAMESPACE_FILE, 'r') as nsf:
+                        hostname = "%s/%s" % (re.sub(r"[\n\t\s]*",
+                                            "", nsf.read()), hostname)
+                await websocket.send(json.dumps({'stream': 'variable', 'variableName': 'wsHostname', 'variableValue': hostname}))
         else:
-            await socket.send(json.dumps({'stream': 'stderr', 'data': "command: %s is not allowed." % cmd}))
-            await socket.send(json.dumps({'stream': 'completed', 'data': 1}))
+            cmd = data['cmd']
+            if isinstance(data['cmd'], list):
+                cmd = shlex.join(data['cmd'])
+            allowed = False
+            for regex in config['allowed_commands']:
+                if re.match(r"%s" % regex, cmd):
+                    allowed = True
+                    break
+            if allowed:
+                process = await asyncio.create_subprocess_shell(
+                    cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                await asyncio.wait([
+                    _stream_to_ws(process.stdout, 'stdout', websocket),
+                    _stream_to_ws(process.stderr, 'stderr', websocket)
+                ])
+                await websocket.send(json.dumps({'stream': 'completed', 'data': process.returncode}))
+            else:
+                await websocket.send(json.dumps({'stream': 'stderr', 'data': "command: %s is not allowed." % cmd}))
+                await websocket.send(json.dumps({'stream': 'completed', 'data': 1}))
     except json.JSONDecodeError:
         print("invalid request from client: %s" % rawdata)
     except websockets.exceptions.ConnectionClosed:

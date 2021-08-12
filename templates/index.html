@@ -39,8 +39,8 @@
                     </a>
                 </div>
             </div>
-            <div class="navbar-text mr-auto text-nowrap">
-                <strong>{{ hostname }}</strong>
+            <div class="navbar-text mr-auto text-nowrap font-weight-bold" id='hostname'>
+                {{ hostname }}
             </div>
             <div class="navbar-text mr-sm-0 m-2">
                 <span role='button' data-toggle="modal" data-target='#settingsModal'>
@@ -262,6 +262,7 @@
     <script>
 
         var commandRunning = false;
+        var wsHostname = '{{ hostname }}';
         var wsHost = '{{ host }}';
         var wsPort = parseInt('{{ port }}');
 
@@ -309,6 +310,15 @@
                         resetUI();
                     }
                 }
+                if (message.stream == "variable") {
+                    if(message.variableName == "wsHostname") {
+                        wsHostname = message.variableValue;
+                        $('#hostname').text(wsHostname);
+                        $('#outputs').hide();
+                        stopSpin();
+                        resetUI();
+                    }
+                }
             };
             return ws;
         }
@@ -320,6 +330,15 @@
             setTimeout(function () {
                 socket = wsConnect(cmd);
             }, 2000);
+        }
+
+        function getHostname() {
+            let cmd = {
+                type: 'variable',
+                target: 'wsHostname',
+                cmd: ['hostname']
+            }
+            issueCmd(cmd);
         }
 
         function issueCmd(cmd) {
@@ -370,6 +389,7 @@
                 wsPort = parseInt($('#wsport').val());
                 $('#settingsModal').modal('hide');
                 forceReconnect();
+                getHostname();
             });
 
             $('#iproute').click(function () {
