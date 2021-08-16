@@ -15,6 +15,10 @@
         integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.18/dist/css/bootstrap-select.css"
         crossorigin="anonymous">
+    <!-- scripts -->
+    <script src="https://cdn.socket.io/4.1.2/socket.io.min.js"
+        integrity="sha384-toS6mmwu70G0fw54EGlWWeA4z3dyJ+dlXBtSURSKN4vyRFOcxd3Bzjj/AoOwY+Rg"
+        crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
         integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
         crossorigin="anonymous"></script>
@@ -39,7 +43,7 @@
                     </a>
                 </div>
             </div>
-            <div class="navbar-text mr-auto text-nowrap font-weight-bold" id='hostname'>
+            <div class="navbar-text mr-auto text-nowrap font-weight-bold text-danger" id='hostname'>
                 {{ hostname }}
             </div>
             <div class="navbar-text mr-sm-0 m-2">
@@ -262,32 +266,50 @@
     <script>
 
         var commandRunning = false;
+
         var wsHostname = '{{ hostname }}';
         var wsHost = '{{ host }}';
         var wsPort = parseInt('{{ port }}');
 
-        function wsConnect(cmd) {
-            var ws = new WebSocket("ws://" + wsHost + ":" + wsPort);
-            ws.onopen = function (e) {
-                console.log("connection open to ws://" + wsHost + ":" + wsPort);
-                if (cmd) {
-                    console.log('connection opened to server, running pending command: ' + JSON.stringify(cmd));
-                    issueCmd(cmd);
-                }
-            };
-            ws.onclose = function (e) {
-                console.log("connection clsoed to ws://" + wsHost + ":" + wsPort);
-                socket = undefined;
-            };
-            ws.onerror = function (e) {
-                console.log("error from ws://" + wsHost + ":" + wsPort + "-" + JSON.stringify(e));
-                $('#outputs').show();
-                $('#stderr').show();
-                $('#commanderr').text('error communicating with command service');
-            };
-            ws.onmessage = function (e) {
-                console.log("message received from ws://" + wsHost + ":" + wsPort);
-                message = JSON.parse(e.data.toString());
+        var socket = io({
+            autoConnect: false
+        });
+
+        function connect() {
+            if (socket.connected) {
+                socket.disconnect();
+            }
+            console.log('connecting to ws://' + wsHost + ':' + wsPort);
+            socket.connect('ws://' + wsHost + ':' + wsPort);
+        }
+
+        socket.on("connect", () => {
+            console.log('connected socket id: ' + socket.id);
+            getHostname();
+        });
+
+        socket.on('disconnect', function (reason) {
+            console.log('disconnected from webservice: ' + reason);
+            if (reason === 'io server disconnect') {
+                connect()
+            }
+        });
+
+        socket.on('variableResponse', function (message) {
+            console.log('got variable message: ' + JSON.stringify(message));
+            if (message.variableName == "wsHostname") {
+                wsHostname = message.variableValue;
+                $('#hostname').removeClass('text-danger').addClass('text-success').text(wsHostname);
+                $('#outputs').hide();
+                stopSpin();
+                resetUI();
+            }
+            commandRunning = false;
+        });
+
+        socket.on('commandResponse', function (message) {
+            console.log('got commandResposne message: ' + JSON.stringify(message));
+            if (commandRunning && message.id == commandRunning) {
                 if (message.stream == "stdout") {
                     $('#stdout').show();
                     $('#commandout').append(message.data);
@@ -310,27 +332,10 @@
                         resetUI();
                     }
                 }
-                if (message.stream == "variable") {
-                    if(message.variableName == "wsHostname") {
-                        wsHostname = message.variableValue;
-                        $('#hostname').text(wsHostname);
-                        $('#outputs').hide();
-                        stopSpin();
-                        resetUI();
-                    }
-                }
-            };
-            return ws;
-        }
-
-        function forceReconnect(cmd) {
-            commandRunning = false;
-            resetUI();
-            if (socket) { socket.close(); }
-            setTimeout(function () {
-                socket = wsConnect(cmd);
-            }, 2000);
-        }
+            } else {
+                console.log('commandResponse does not match running id:' + commandRunning)
+            }
+        });
 
         function getHostname() {
             let cmd = {
@@ -341,24 +346,38 @@
             issueCmd(cmd);
         }
 
+        function uuidv4() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
         function issueCmd(cmd) {
             spin();
-            if (commandRunning) {
-                console.log('forcing closed connection to server during running command to issue command: ' + JSON.stringify(cmd));
-                forceReconnect(cmd);
-            } else if (socket && socket.readyState == WebSocket.OPEN) {
-                $('#outputs').show();
-                $('#stderr').hide();
-                $('#stdout').hide();
-                $('#commandsend').text(cmd.type + ' - ' + cmd.target);
-                $('#commanderr').text('');
-                $('#commandout').text('');
-                commandRunning = true;
-                socket.send(JSON.stringify(cmd));
-            } else {
-                forceReconnect(cmd);
-            }
+            $('#outputs').show();
+            $('#stderr').hide();
+            $('#stdout').hide();
+            $('#commandsend').text(cmd.type + ' - ' + cmd.target);
+            $('#commanderr').text('');
+            $('#commandout').text('');
+            commandId = uuidv4()
+            cmd.id = commandId
+            commandRunning = commandId;
+            console.log('sending command: ' + JSON.stringify(cmd));
+            socket.send('commandRequest', cmd);
         };
+
+        function haltCmd() {
+            if(commandRunning) {
+                let cmd = {
+                    id: commandRunning,
+                    type: 'halt'
+                }
+                console.log('sending command: ' + JSON.stringify(cmd));
+                socket.send('commandRequest', cmd);
+            }
+        }
 
         function spin() {
             $('#progress').css('width', '100%').addClass('progress-bar-stripped progress-bar-animated active');
@@ -375,8 +394,6 @@
             $('#genericcommandbutton').removeClass('btn-danger').text('Run command');
         }
 
-        let socket = undefined;
-
         $(document).ready(function () {
 
             $('#wshost').val(wsHost);
@@ -384,12 +401,13 @@
 
             $('#outputs').hide();
 
+            connect();
+
             $('#saveSettings').click(function () {
                 wsHost = $('#wshost').val();
                 wsPort = parseInt($('#wsport').val());
                 $('#settingsModal').modal('hide');
-                forceReconnect();
-                getHostname();
+                connect(wsHost, wsPort);
             });
 
             $('#iproute').click(function () {
@@ -443,7 +461,8 @@
                 if (commandRunning) {
                     stopSpin();
                     resetUI();
-                    forceReconnect();
+                    haltCmd();
+                    commandRunning = false;
                     return;
                 }
                 let pingcount = $('#pingcount').val();
@@ -473,7 +492,8 @@
                 if (commandRunning) {
                     stopSpin();
                     resetUI();
-                    forceReconnect();
+                    haltCmd();
+                    commandRunning = false;
                     return;
                 }
                 let tcpingcount = $('#tcpingcount').val();
@@ -539,7 +559,8 @@
                 if (commandRunning) {
                     stopSpin();
                     resetUI();
-                    forceReconnect();
+                    haltCmd();
+                    commandRunning = false;
                     return;
                 }
                 let cmd = {

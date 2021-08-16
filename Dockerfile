@@ -26,7 +26,9 @@ RUN apt-get update && \
     python3-pycurl \
     python3-yaml \
     python3-flask \
-    python3-websockets \
+    python3-flask-socketio \
+    python3-psutil \
+    python3-eventlet \
     iproute2 \
     git
 
@@ -40,7 +42,6 @@ RUN curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packa
 RUN git clone https://github.com/jgruberf5/container-demo-runner.git
 
 EXPOSE 8080
-EXPOSE 5678
 EXPOSE 5001
 
 ENTRYPOINT [ "/container-demo-runner/run.sh" ]
