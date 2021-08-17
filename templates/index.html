@@ -369,7 +369,7 @@
         };
 
         function haltCmd() {
-            if(commandRunning) {
+            if (commandRunning) {
                 let cmd = {
                     id: commandRunning,
                     type: 'halt'
@@ -407,7 +407,10 @@
                 wsHost = $('#wshost').val();
                 wsPort = parseInt($('#wsport').val());
                 $('#settingsModal').modal('hide');
-                connect(wsHost, wsPort);
+                socket = io({
+                    autoConnect: false
+                });
+                connect();
             });
 
             $('#iproute').click(function () {
