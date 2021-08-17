@@ -62,7 +62,7 @@ spec:
   ports:
   - name: http
     port: 8080
-    nodePort: 8080
+    targetPort: 8080
 ---
 apiVersion: v1
 kind: Service
@@ -88,8 +88,7 @@ spec:
   ports:
   - name: http
     port: 5001
-    nodePort: 31001
-
+    targetPort: 5001
 ---
 apiVersion: v1
 kind: Service
