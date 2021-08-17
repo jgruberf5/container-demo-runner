@@ -5,8 +5,6 @@ metadata:
 data:
   allowed_commands: |
     ["^ping", "^cat /etc/hosts", "^cat /etc/resolv.conf", "^env$", "^ip route$", "^ip addr$", "^ip link$", "^ip neigh", "^netstat", "^dig", "^nc", "^ab", "^siege", "^tcping", "^traceroute", "^tcptraceroute", "^curl", "^whois", "^kubectl", "^iperf"]
-  host_entries: |
-    104.21.192.109    ifconfig.io
   http_listen_address: "0.0.0.0"
   http_listen_port: "8080"
   ws_listen_address: "0.0.0.0"

@@ -24,5 +24,3 @@ allowed_commands:
   - "^whois"
   - "^kubectl"
   - "^iperf"
-host_entries: |
-  104.21.192.109    ifconfig.io
