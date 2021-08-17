@@ -21,15 +21,11 @@ RUN apt-get update && \
     curl \
     net-tools \
     netcat \
+    netbase \
     iperf \
     traceroute \
-    python3-pycurl \
-    python3-yaml \
-    python3-flask \
-    python3-flask-socketio \
-    python3-psutil \
-    python3-eventlet \
     iproute2 \
+    python3-pip \
     git
 
 RUN curl http://www.vdberg.org/~richard/tcpping -o /usr/bin/tcping && chmod 755 /usr/bin/tcping
@@ -40,6 +36,8 @@ RUN curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packa
     apt-get install -u kubectl
 
 RUN git clone https://github.com/jgruberf5/container-demo-runner.git
+
+RUN pip3 install -r /container-demo-runner/requirements.txt
 
 EXPOSE 8080
 EXPOSE 5001
