@@ -69,7 +69,9 @@ def get_file(filename):  # pragma: no cover
 
 def getHostname():
     hostname = socket.gethostname()
+    print('found hostname: %s' % hostname)
     if os.path.exists(NAMESPACE_FILE):
+        print('running in K8s, adding namespace to hostname')
         with open(NAMESPACE_FILE, 'r') as nsf:
             hostname = "%s/%s" % (
                 re.sub(r"[\n\t\s]*", "", nsf.read()), hostname)
@@ -100,7 +102,7 @@ def destroy_pid(pid):
         if process_runner['stderr_thread'].is_alive():
             process_runner['stderr_kill_event'].set()
         del process_runner['stdout_thread']
-        del process_runner['stdout_kill_event']    
+        del process_runner['stdout_kill_event']
         del process_runner['stderr_thread']
         del process_runner['stderr_kill_event']
         os.kill(pid, signal.SIGKILL)
@@ -154,14 +156,8 @@ def runner_ui():
     host = request.host
     if str.find(host, ':') > 0:
         host = str.split(host, ':')[0]
-    hostname = socket.gethostname()
-    if os.path.exists(NAMESPACE_FILE):
-        with open(NAMESPACE_FILE, 'r') as nsf:
-            hostname = "%s/%s" % (re.sub(r"[\n\t\s]*",
-                                  "", nsf.read()), hostname)
-    port = int(os.getenv('WS_CLIENT_PORT', config['ws_listen_port']))
-    return render_template(
-        'index.html', host=host, port=port, hostname=hostname)
+
+    return render_template('index.html', hostname='connecting...')
 
 
 @app.route('/', defaults={'path': ''})
@@ -202,7 +198,7 @@ def message_handler(message, data):
     print('received message: %s:%s sid: %s' % (message, data, request.sid))
     if message == 'commandRequest':
         if data['type'] == 'variable':
-            print('getting setting client variable: %s with command: %s' %
+            print('setting client variable: %s with command: %s' %
                   (data['target'], data['cmd']))
             response = {
                 'variableName': data['target'],

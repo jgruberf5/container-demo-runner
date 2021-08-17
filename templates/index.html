@@ -268,74 +268,78 @@
         var commandRunning = false;
 
         var wsHostname = '{{ hostname }}';
-        var wsHost = '{{ host }}';
-        var wsPort = parseInt('{{ port }}');
+        var wsHost = location.hostname;
+        var wsPort = location.port;
 
-        var socket = io({
-            autoConnect: false
-        });
+        var socket = false;
 
         function connect() {
             if (socket.connected) {
                 socket.disconnect();
+                socket = false;
             }
-            console.log('connecting to ws://' + wsHost + ':' + wsPort);
-            socket.connect('ws://' + wsHost + ':' + wsPort);
+            if (!socket) {
+                console.log('connecting to ws://' + wsHost + ':' + wsPort);
+                socket = io('ws://' + wsHost + ':' + wsPort, { forceNew: true });
+            }
+            setHandlers(socket);
         }
 
-        socket.on("connect", () => {
-            console.log('connected socket id: ' + socket.id);
-            getHostname();
-        });
+        function setHandlers(socket) {
+            socket.on("connect", () => {
+                console.log('connected socket id: ' + socket.id);
+                getHostname();
+            });
 
-        socket.on('disconnect', function (reason) {
-            console.log('disconnected from webservice: ' + reason);
-            if (reason === 'io server disconnect') {
-                connect()
-            }
-        });
-
-        socket.on('variableResponse', function (message) {
-            console.log('got variable message: ' + JSON.stringify(message));
-            if (message.variableName == "wsHostname") {
-                wsHostname = message.variableValue;
-                $('#hostname').removeClass('text-danger').addClass('text-success').text(wsHostname);
-                $('#outputs').hide();
-                stopSpin();
-                resetUI();
-            }
-            commandRunning = false;
-        });
-
-        socket.on('commandResponse', function (message) {
-            console.log('got commandResposne message: ' + JSON.stringify(message));
-            if (commandRunning && message.id == commandRunning) {
-                if (message.stream == "stdout") {
-                    $('#stdout').show();
-                    $('#commandout').append(message.data);
+            socket.on('disconnect', function (reason) {
+                console.log('disconnected from webservice: ' + reason);
+                if (reason === 'io server disconnect') {
+                    connect()
                 }
-                if (message.stream == "stderr") {
-                    $('#stderr').show();
-                    $('#commanderr').append(message.data);
+            });
+
+            socket.on('variableResponse', function (message) {
+                console.log('got variable message: ' + JSON.stringify(message));
+                if (message.variableName == "wsHostname") {
+                    wsHostname = message.variableValue;
+                    $('#hostname').removeClass('text-danger').addClass('text-success').text(wsHostname);
+                    $('#outputs').hide();
+                    stopSpin();
+                    resetUI();
                 }
-                if (message.stream == "completed") {
-                    commandRunning = false;
-                    if (message.data == 0) {
+                commandRunning = false;
+            });
+
+            socket.on('commandResponse', function (message) {
+                console.log('got commandResposne message: ' + JSON.stringify(message));
+                if (commandRunning && message.id == commandRunning) {
+                    if (message.stream == "stdout") {
                         $('#stdout').show();
-                        $('#commandout').append('\n<b>command completed with return code:' + message.data + '</b>\n');
-                        stopSpin();
-                        resetUI();
-                    } else {
-                        $('#stderr').show();
-                        $('#commanderr').append('\n<b>command completed with return code:' + message.data + '</b>\n');
-                        stopSpin();
-                        resetUI();
+                        $('#commandout').append(message.data);
                     }
+                    if (message.stream == "stderr") {
+                        $('#stderr').show();
+                        $('#commanderr').append(message.data);
+                    }
+                    if (message.stream == "completed") {
+                        commandRunning = false;
+                        if (message.data == 0) {
+                            $('#stdout').show();
+                            $('#commandout').append('\n<b>command completed with return code:' + message.data + '</b>\n');
+                            stopSpin();
+                            resetUI();
+                        } else {
+                            $('#stderr').show();
+                            $('#commanderr').append('\n<b>command completed with return code:' + message.data + '</b>\n');
+                            stopSpin();
+                            resetUI();
+                        }
+                    }
+                } else {
+                    console.log('commandResponse does not match running id:' + commandRunning)
                 }
-            } else {
-                console.log('commandResponse does not match running id:' + commandRunning)
-            }
-        });
+            });
+        }
 
         function getHostname() {
             let cmd = {
@@ -398,7 +402,6 @@
 
             $('#wshost').val(wsHost);
             $('#wsport').val(wsPort);
-
             $('#outputs').hide();
 
             connect();
@@ -406,10 +409,9 @@
             $('#saveSettings').click(function () {
                 wsHost = $('#wshost').val();
                 wsPort = parseInt($('#wsport').val());
+                wsHostname = 'connecting...'
+                $('#hostname').removeClass('text-success').addClass('text-danger').text(wsHostname);
                 $('#settingsModal').modal('hide');
-                socket = io({
-                    autoConnect: false
-                });
                 connect();
             });
 
