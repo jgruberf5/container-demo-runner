@@ -43,9 +43,7 @@ if os.path.exists(CONFIG_MAP_DIR):
                     config[ck] = cv
 
 if 'host_entries' in config:
-    print(config['host_entries'])
     with open('/etc/hosts', 'a+') as eh:
-        print("writing out: \n\n%s\n\n to /etc/hosts" % config['host_entries'])
         eh.write('\n#### entries added by container-demo-runner ####\n')
         eh.write(config['host_entries'])
         eh.write('\n#### end entries added by container-demo-runner ####\n')
