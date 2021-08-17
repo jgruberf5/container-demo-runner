@@ -4,16 +4,17 @@
 
 This container hosts a web service and websocket service which enable exposure of the container's environment through a web interface.
 
-By default the web interface is started on port 8080 and the websocket command runner is started on port 5678. 
+By default the web interface and web socket services are started on port 8080. 
 
 ```bash
-docker run --rm -p 8080:8080 -p 5678:5678 --name container-demo-runner jgruberf5/container-demo-runner:latest
+docker run --rm -p 8080:8080 --name container-demo-runner jgruberf5/container-demo-runner:latest
 ```
 
 Then open a web browser to http://localhost:8080 .
 
 ![Application Screenshot](https://github.com/jgruberf5/container-demo-runner/raw/main/static/application_screenshot.png)
 
+The UI will show the remote hostname (or K8s namespace/hostname) in green in the top right corner when the service is connected. The settings (gear) icon to the top far right will let you change which backend websocket command host you are connected to.
 
 ## Configuration
 
@@ -22,7 +23,7 @@ The services will look for the presence of a `/etc/config.yaml` file. The defaul
 ```yaml
 ---
 ws_listen_address: 0.0.0.0
-ws_listen_port: 5678
+ws_listen_port: 8080
 http_listen_address: 0.0.0.0
 http_listen_port: 8080
 allowed_commands:
