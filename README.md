@@ -7,14 +7,14 @@ This container hosts a web service and websocket service which enable exposure o
 By default the web interface and web socket services are started on port 8080. 
 
 ```bash
-docker run --rm -p 8080:8080 --name container-demo-runner jgruberf5/container-demo-runner:latest
+docker run --rm -p 8080:8080 -p 5001:5001 --name container-demo-runner jgruberf5/container-demo-runner:latest
 ```
 
 Then open a web browser to `http://localhost:8080` .
 
 ![Application Screenshot](https://github.com/jgruberf5/container-demo-runner/raw/main/static/application_screenshot.png)
 
-The UI will show the remote hostname (or K8s namespace/hostname) in green in the top right corner when the service is connected. The settings (gear) icon to the top far right will let you change which backend websocket command host you are connected to.
+The UI will show the remote hostname (or K8s namespace/hostname) in green in the top right corner when the service is connected. The settings (gear) icon in the top far right will let you change which backend websocket command host you are connected to.
 
 ## Configuration
 
@@ -47,13 +47,13 @@ allowed_commands:
   - "^whois"
   - "^kubectl"
   - "^iperf"
-host_entries: |
-  104.21.192.109    ifconfig.io
+#host_entries: |
+#  104.21.192.109    ifconfig.io
 ```
 
 The `allowed_commands` list is a list of regular expressions which each requested command will be mapped against before the command is executed within the container.
 
-When using in a K8s manifest YAML, create a JSON list using a multi-line text attribute to alter your `allowed_commands`.
+When used in a K8s manifest YAML, create a JSON list using a multi-line text attribute to alter your `allowed_commands`.
 
 ```yaml
 apiVersion: v1
@@ -88,11 +88,11 @@ The web UI includes buttons and forms to run some preconfigured commands.
 | *DNS Lookup* | `dig [FQDN from form] [type from form]` |
 | *HTTP GET* | `curl -H "Connection: close" -k -L -s -o /dev/null -w " http_status_code: %{http_code}\n content_type: %{content_type}%\n dns_resolution: %{time_namelookup}\n tcp_established: %{time_connect}\n ssl_handshake_done: %{time_appconnect}\n TTFB: %{time_starttransfer}\n speed_download: %{speed_download}\n speed_upload: %{speed_upload}\n total_time: %{time_total}\n size: %{size_download}\n\n" [url from form]`|
 
-You can run any included commands which regex matches your `/etc/config.yaml` file `allowed_commands`. If the container does not include a CLI utility you need, add the appropriate Ubuntu package in your `Dockerfile` and rebuild the container.
+You can run any included commands which regex matches your `/etc/config.yaml` file `allowed_commands` list. If the container does not include a CLI utility you need, add the appropriate Ubuntu package (or install via other means) in your `Dockerfile` and rebuild the container.
 
-You can run commands by using the *Run Command* form in the web UI.
+You can run various commands by using the *Run Command* form in the web UI.
 
-## Monitoring Kubernetes from Inside the Cluster
+## Monitoring Kubernetes from Inside a K8s Cluster
 
 The included K8s manifest creates a service account which has `["get", "watch", "list"]` access to `["pods", "services", "namespaces", "deployments", "jobs", "statefulsets", "persistentvolumeclaims"]`. The included `kubectl` will use the `load_incluster_config` to access the K8s API endpoint defined in the environment.
 
