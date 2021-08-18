@@ -1,6 +1,6 @@
 # container-demo-runner
 
-**Containerized Remote Execution Service for Demonstration and Troubleshooting**
+## Containerized Remote Execution Service for Demonstration and Troubleshooting
 
 This container hosts a web service and websocket service which enable exposure of the container's environment through a web interface.
 
@@ -10,7 +10,7 @@ By default the web interface and web socket services are started on port 8080.
 docker run --rm -p 8080:8080 --name container-demo-runner jgruberf5/container-demo-runner:latest
 ```
 
-Then open a web browser to http://localhost:8080 .
+Then open a web browser to `http://localhost:8080` .
 
 ![Application Screenshot](https://github.com/jgruberf5/container-demo-runner/raw/main/static/application_screenshot.png)
 
@@ -71,4 +71,33 @@ data:
     104.21.192.109    ifconfig.io
 ```
 
-The `host_entries` multi-line text attribute will be appended to `/etc/hosts`.
+The `host_entries` multi-line text attribute will be appended to `/etc/hosts`. If you plan on adding `host_entries` the container will need to be privledged to run as `root` (user 0).
+
+## Preconfigured Command Runners
+
+The web UI includes buttons and forms to run some preconfigured commands.
+
+| Button | Command Run |
+| ---------- | ---------- |
+| *Show Routes* | `ip route` |
+| *Show IP addresses* | `ip addr` |
+| *Show Hosts* | `cat /etc/hosts` |
+| *Show Environment* | `env` |
+| *ICMP Ping* | `ping -c [count from form] [host from form]` |
+| *TCP Ping* | `tcping -c [count from form] [host from form]` |
+| *DNS Lookup* | `dig [FQDN from form] [type from form]` |
+| *HTTP GET* | `curl -H "Connection: close" -k -L -s -o /dev/null -w " http_status_code: %{http_code}\n content_type: %{content_type}%\n dns_resolution: %{time_namelookup}\n tcp_established: %{time_connect}\n ssl_handshake_done: %{time_appconnect}\n TTFB: %{time_starttransfer}\n speed_download: %{speed_download}\n speed_upload: %{speed_upload}\n total_time: %{time_total}\n size: %{size_download}\n\n" [url from form]`|
+
+You can run any included command which regex matches your `/etc/config.yaml` file `allowed_commands`. If the container does not include a CLI utility you need, add the appropriate Ubuntu package in your `Dockerfile` and rebuild the container.
+
+You can run commands by using the *Run Command* form in the web UI.
+
+## Monitoring Kubernetes from Inside the Cluster
+
+The included K8s manifest creates a service account which has `["get", "watch", "list"]` access to `["pods", "services", "namespaces", "deployments", "jobs", "statefulsets", "persistentvolumeclaims"]`. The included `kubectl` will use the `load_incluster_config` to access the K8s API endpoint defined in the environment.
+
+## Doing Load Testing
+
+The image includes the `ab` (apache bench) client and the `siege` web load testing tools. You can utilize these tools by using the *Run Command* form in the web UI.
+
+The image also includes the `iperf` network performance tool. By default `iperf` uses port 5001. You will need to include a port forward to the `iperf` listener. The included K8s manifest will create both an `NodePort` and `ClusterIP` service for `iperf` port 5001. You can utilize `iperf` by using the *Run Command* form in the web UI.
