@@ -1,7 +1,36 @@
 apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: diag-container
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-role-binding-clusterrolebinding-simple
+subjects:
+  - kind: ServiceAccount
+    name: diag-container
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: cluster-role-binding-diag-container
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-role-binding-diag-container
+rules: 
+- apiGroups: [""] 
+  resources: ["pods","services","namespaces","deployments","jobs","statefulsets","persistentvolumeclaims"] 
+  verbs: ["get", "watch", "list"]
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: diag-container-config
+  namespace: default
 data:
   allowed_commands: |
     ["^ping", "^cat /etc/hosts", "^cat /etc/resolv.conf", "^env$", "^ip route$", "^ip addr$", "^ip link$", "^ip neigh", "^netstat", "^dig", "^nc", "^ab", "^siege", "^tcping", "^traceroute", "^tcptraceroute", "^curl", "^whois", "^kubectl", "^iperf"]
@@ -14,6 +43,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: diag-container-app
+  namespace: default
 spec:
   selector:
     matchLabels:
@@ -24,6 +54,7 @@ spec:
       labels:
         app: diag-container-app
     spec:
+      serviceAccountName: diag-container
       volumes:
       - name: diag-container-volume
         configMap:
@@ -53,6 +84,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: diag-container-web-in-cluster
+  namespace: default
 spec:
   type: ClusterIP
   selector:
@@ -66,6 +98,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: diag-container-web
+  namespace: default
 spec:
   type: NodePort
   selector:
@@ -73,12 +106,13 @@ spec:
   ports:
   - name: http
     port: 8080
-    nodePort: 31080
+    nodePort: 30080
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: diag-container-iperf-in-cluster
+  namespace: default
 spec:
   type: ClusterIP
   selector:
@@ -92,6 +126,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: diag-container-iperf
+  namespace: default
 spec:
   type: NodePort
   selector:
