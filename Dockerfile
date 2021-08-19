@@ -27,7 +27,6 @@ RUN apt-get update && \
     iproute2 \
     python3-pip \
     git \
-    install \
     gconf-service \
     libasound2 \
     libatk1.0-0 \
