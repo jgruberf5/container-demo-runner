@@ -278,12 +278,12 @@
         var socket = false;
 
         function updateWsHostFromLocation() {
-            if (location.protocol === 'https') {
+            if (location.protocol === 'https:') {
                 wsProtocol = 'wss:'
             }
-            if (location.port === '') {
+            if (! location.port) {
                 wsPort = 80;
-                if (location.protocol == 'https') {
+                if (location.protocol == 'https:') {
                     wsPort = 443;
                 }
             }
