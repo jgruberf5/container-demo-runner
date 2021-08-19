@@ -70,11 +70,14 @@
                 </div>
                 <div class="modal-body">
                     <div class='form-group row m-1' id='settingsgroup'>
+                        <label class='text-secondary m-2'>Protocol:</label>
+                        <div class='col-sm-12'>
+                            <input class='form-control m-2' type='text' id='wsprotocol' />
+                        </div>
                         <label class='text-secondary m-2'>Host:</label>
                         <div class='col-sm-12'>
                             <input class='form-control m-2' type='text' id='wshost' />
                         </div>
-
                         <label class='text-secondary m-2'>port:</label>
                         <div class="col-sm-12">
                             <input class='form-control m-2' type='numeric' id='wsport' />
@@ -268,10 +271,26 @@
         var commandRunning = false;
 
         var wsHostname = '{{ hostname }}';
+        var wsProtocol = 'ws:';
         var wsHost = location.hostname;
         var wsPort = location.port;
 
         var socket = false;
+
+        function updateWsHostFromLocation() {
+            if (location.protocol === 'https') {
+                wsProtocol = 'wss:'
+            }
+            if (location.port === '') {
+                wsPort = 80;
+                if (location.protocol == 'https') {
+                    wsPort = 443;
+                }
+            }
+            $('#wsprotocol').val(wsProtocol);
+            $('#wshost').val(wsHost);
+            $('#wsport').val(wsPort);
+        }
 
         function connect() {
             if (socket.connected) {
@@ -279,8 +298,8 @@
                 socket = false;
             }
             if (!socket) {
-                console.log('connecting to ws://' + wsHost + ':' + wsPort);
-                socket = io('ws://' + wsHost + ':' + wsPort, { forceNew: true });
+                console.log('connecting to ' + wsProtocol + '//' + wsHost + ':' + wsPort);
+                socket = io(wsProtocol + '//' + wsHost + ':' + wsPort, { forceNew: true });
             }
             setHandlers(socket);
         }
@@ -400,13 +419,13 @@
 
         $(document).ready(function () {
 
-            $('#wshost').val(wsHost);
-            $('#wsport').val(wsPort);
             $('#outputs').hide();
 
+            updateWsHostFromLocation();
             connect();
 
             $('#saveSettings').click(function () {
+                wsProtocol = $('#wsprotocol').val();
                 wsHost = $('#wshost').val();
                 wsPort = parseInt($('#wsport').val());
                 wsHostname = 'connecting...'
