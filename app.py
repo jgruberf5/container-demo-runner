@@ -223,9 +223,12 @@ def message_handler(message, data):
             try:
                 urlparse(data['target'])
                 scripting_path = os.path.dirname(os.path.realpath(__file__))
-                snapshot_file_name = "%s.png" % base64.b64encode(data['target'].encode()).decode()
-                snapshot_file_path = "%s/static/%s" % (scripting_path, snapshot_file_name)
-                cmd = "%s/web_screenshot.py --url '%s' --screenshot '%s'" % (scripting_path, data['target'], snapshot_file_path)
+                snapshot_file_name = "%s.png" % base64.b64encode(
+                    data['target'].encode()).decode()
+                snapshot_file_path = "%s/static/%s" % (
+                    scripting_path, snapshot_file_name)
+                cmd = "%s/web_screenshot.py --url '%s' --screenshot '%s'" % (
+                    scripting_path, data['target'], snapshot_file_path)
                 print('running command: %s' % cmd)
                 exit_code = run_cmd(request.sid, cmd, data['id'])
                 display_response = {
@@ -235,9 +238,15 @@ def message_handler(message, data):
                 }
                 print("commandResponse to %s: %s" %
                       (display_response['stream'], display_response['data']))
-                
                 emit('commandResponse', display_response)
-
+                complete_response = {
+                    'id': data['id'],
+                    'stream': 'completed',
+                    'data': exit_code
+                }
+                print("commandResponse to %s: %s" %
+                      (complete_response['stream'], complete_response['data']))
+                emit('commandResponse', complete_response)
             except Exception as e:
                 error_response = {
                     'id': data['id'],
