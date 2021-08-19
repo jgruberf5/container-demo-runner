@@ -9,6 +9,9 @@ import signal
 import psutil
 import socket
 import re
+import base64
+
+from urllib.parse import urlparse
 
 from flask import Flask, request, render_template, Response
 from flask_socketio import SocketIO, emit
@@ -215,6 +218,43 @@ def message_handler(message, data):
                 'data': 0
             }
             emit('commandResponse', complete_response)
+        elif data['type'] == 'webscreenshot':
+            print('getting web screen shot for: %s' % data['target'])
+            try:
+                urlparse(data['target'])
+                scripting_path = os.path.dirname(os.path.realpath(__file__))
+                snapshot_file_name = "%s.png" % base64.b64encode(data['target'].encode()).decode()
+                snapshot_file_path = "%s/static/%s" % (scripting_path, snapshot_file_name)
+                cmd = "%s/web_screenshot.py --url '%s' --screenshot '%s'" % (scripting_path, data['target'], snapshot_file_path)
+                print('running command: %s' % cmd)
+                exit_code = run_cmd(request.sid, cmd, data['id'])
+                display_response = {
+                    'id': data['id'],
+                    'stream': 'image',
+                    'data': "/static/%s" % snapshot_file_name
+                }
+                print("commandResponse to %s: %s" %
+                      (display_response['stream'], display_response['data']))
+                
+                emit('commandResponse', display_response)
+
+            except Exception as e:
+                error_response = {
+                    'id': data['id'],
+                    'stream': 'stderr',
+                    'data': "url: %s is not valid. %s - %s\n\n" % (data['cmd'], e.__class__.__name__, e)
+                }
+                print("commandResponse to %s: %s" %
+                      (error_response['stream'], error_response['data']))
+                emit('commandResponse', error_response)
+                complete_response = {
+                    'id': data['id'],
+                    'stream': 'completed',
+                    'data': -1
+                }
+                print("commandResponse to %s: %s" %
+                      (complete_response['stream'], complete_response['data']))
+                emit('commandResponse', complete_response)
         else:
             if command_allowed(data['cmd']):
                 exit_code = run_cmd(request.sid, data['cmd'], data['id'])

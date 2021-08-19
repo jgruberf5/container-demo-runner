@@ -120,6 +120,10 @@
                         HTTP GET (statistics)
                     </button>
                     <button class="btn btn-outline-secondary m-2 collapsed" type="button" data-toggle="collapse"
+                        data-target="#collapseWebscreenshot" aria-expanded="true" aria-controls="collapseWebscreenshot">
+                        Web Screenshot
+                    </button>
+                    <button class="btn btn-outline-secondary m-2 collapsed" type="button" data-toggle="collapse"
                         data-target="#collapseCommand" aria-expanded="true" aria-controls="collapseCommand">
                         Run Command
                     </button>
@@ -220,6 +224,21 @@
                         </div>
                         <div>
                             <button id='geturlbutton' class="btn btn-outline-secondary m-2">GET</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="collapseWebscreenshot" class="collapse" aria-labelledby="headingFunctions"
+                data-parent="#accordionFunctions">
+                <div class="card-body">
+                    <div class='form-group row m-1' id='websnapshot'>
+                        <label class='text-secondary m-2'>target:</label>
+                        <div class="col-sm-5">
+                            <input class='form-control m-2' type='text' id='websnapshoturl' placeholder='URL'>
+                        </div>
+                        <div>
+                            <button id='websnapshoturlbutton' class="btn btn-outline-secondary m-2">GET</button>
                         </div>
                     </div>
                 </div>
@@ -339,6 +358,10 @@
                     if (message.stream == "stderr") {
                         $('#stderr').show();
                         $('#commanderr').append(message.data);
+                    }
+                    if (message.stream == "image") {
+                        $('#stdout').show();
+                        $('#commandout').append('\n<p><img src=' + message.data + ' style="display: block; max-width: 100%; height: auto;"></p></b>\n');
                     }
                     if (message.stream == "completed") {
                         commandRunning = false;
@@ -577,6 +600,15 @@
                     ]
                 }
                 issueCmd(cmd)
+            });
+
+            $('#websnapshoturlbutton').click(function () {
+                let cmd = {
+                    type: 'webscreenshot',
+                    target: $('#websnapshoturl').val(),
+                    cmd: ''
+                }
+                issueCmd(cmd);
             });
 
             $('#genericcommandbutton').click(function () {
