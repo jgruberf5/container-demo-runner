@@ -52,10 +52,11 @@
                 </span>
             </div>
         </div>
-        </div>
         <div class="progress">
             <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="0" aria-valuemin="0"
                 aria-valuemax="100" id="progress" style="width:0%;"></div>
+        </div>
+        <div class="alert px-5 text-uppercase font-weight-bold invisible" id='banner' style="background-color:{{ banner_background_color }}; color:{{ banner_text_color }};">
         </div>
     </header>
     <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel"
@@ -299,6 +300,8 @@
         var wsHost = location.hostname;
         var wsPort = location.port;
 
+        var banner = "{{ banner_text }}";
+
         var socket = false;
 
         function updateWsHostFromLocation() {
@@ -465,6 +468,10 @@
         $(document).ready(function () {
 
             $('#outputs').hide();
+
+            if (banner) {
+                $('#banner').html(banner).removeClass('invisible');
+            }
 
             updateWsHostFromLocation();
             connect();

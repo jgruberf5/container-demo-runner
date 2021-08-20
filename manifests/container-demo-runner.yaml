@@ -77,12 +77,12 @@ spec:
         - name: diag-container-volume
           mountPath: /etc/container-demo-runner
         env:
-        - name: HTTP_CLIENT_PORT
-          value: "31080"
-        - name: WS_CLIENT_PORT
-          value: "31080"
-        - name: IPERF_CLIENT_PORT
-          value: "31001"
+        - name: BANNER
+          value: Welcome to [Your Site Name Here]
+        - name: BANNER_COLOR
+          value: 00ff00
+        - name: BANNER_TEXT_COLOR
+          value: ffffff
 ---
 apiVersion: v1
 kind: Service

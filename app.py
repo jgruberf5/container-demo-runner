@@ -166,8 +166,15 @@ def runner_ui():
     host = request.host
     if str.find(host, ':') > 0:
         host = str.split(host, ':')[0]
-
-    return render_template('index.html', hostname='connecting...')
+    banner_text = os.getenv('BANNER', '')
+    banner_background_color = "#%s" % os.getenv('BANNER_COLOR', '000000')
+    banner_text_color = '#%s' % os.getenv('BANNER_TEXT_COLOR', 'ffffff')
+    return render_template(
+        'index.html',
+        hostname='connecting...',
+        banner_text=(banner_text),
+        banner_background_color=banner_background_color,
+        banner_text_color=banner_text_color)
 
 
 @app.route('/', defaults={'path': ''})
