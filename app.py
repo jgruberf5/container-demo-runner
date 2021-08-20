@@ -10,6 +10,7 @@ import psutil
 import socket
 import re
 import base64
+import dns.resolver
 
 from urllib.parse import urlparse
 
@@ -79,6 +80,12 @@ def getHostname():
             hostname = "%s/%s" % (
                 re.sub(r"[\n\t\s]*", "", nsf.read()), hostname)
     return hostname
+
+
+def getNameserver():
+    nameserver = dns.resolver.Resolver().nameservers[0]
+    print('found nameserver: %s' % nameserver)
+    return nameserver
 
 
 def stream_emitter(id, event, stream_type, stream):
@@ -209,6 +216,8 @@ def message_handler(message, data):
             }
             if data['cmd'][0] == 'hostname':
                 response['variableValue'] = getHostname()
+            if data['cmd'][0] == 'nameserver':
+                response['variableValue'] = getNameserver()
             emit('variableResponse', response)
         elif data['type'] == 'halt':
             destroy_all_processes_for_sid(request.sid)

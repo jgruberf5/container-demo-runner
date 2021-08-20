@@ -191,9 +191,13 @@
                         <div class="col-sm-5">
                             <input class='form-control m-2' type='text' id='dnshost' placeholder='FQDN'>
                         </div>
-                        <label class='text-secondary m-2'>type:</label>
-                        <div class="col-sm-3">
-                            <select class="form-control m-2" id='dnstype'>
+                        <label class='text-secondary m-1'>@</label>
+                        <div class="col-sm-2">
+                            <input class='form-control m-1' type='text' id='dnsnameserver' placeholder='nameserver IP'>
+                        </div>
+                        <label class='text-secondary m-1'>type:</label>
+                        <div class="col-sm-2">
+                            <select class="form-control m-1" id='dnstype'>
                                 <option value='A'>A</option>
                                 <option value='CNAME'>CNAME</option>
                                 <option value='PTR'>PTR</option>
@@ -290,6 +294,7 @@
         var commandRunning = false;
 
         var wsHostname = '{{ hostname }}';
+        var wsNameserver = '{{ nameserver }}';
         var wsProtocol = 'ws:';
         var wsHost = location.hostname;
         var wsPort = location.port;
@@ -327,6 +332,7 @@
             socket.on("connect", () => {
                 console.log('connected socket id: ' + socket.id);
                 getHostname();
+                getNameserver();
             });
 
             socket.on('disconnect', function (reason) {
@@ -341,6 +347,13 @@
                 if (message.variableName == "wsHostname") {
                     wsHostname = message.variableValue;
                     $('#hostname').removeClass('text-danger').addClass('text-success').text(wsHostname);
+                    $('#outputs').hide();
+                    stopSpin();
+                    resetUI();
+                }
+                if (message.variableName == "wsNameserver") {
+                    wsNameserver = message.variableValue;
+                    $('#dnsnameserver').val(wsNameserver);
                     $('#outputs').hide();
                     stopSpin();
                     resetUI();
@@ -388,6 +401,15 @@
                 type: 'variable',
                 target: 'wsHostname',
                 cmd: ['hostname']
+            }
+            issueCmd(cmd);
+        }
+
+        function getNameserver() {
+            let cmd = {
+                type: 'variable',
+                target: 'wsNameserver',
+                cmd: ['nameserver']
             }
             issueCmd(cmd);
         }
@@ -574,6 +596,7 @@
                     target: $('#dnshost').val() + ' ' + recordType,
                     cmd: [
                         'dig',
+                        '@' + $('#dnsnameserver').val(),
                         $('#dnshost').val(),
                         recordType
                     ]
