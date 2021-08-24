@@ -182,7 +182,7 @@ def runner_ui():
 
 @app.route('/webscreenshots/<path:name>')
 def send_screenshot(name):
-    return send_from_directory(PUPPETEER_HOME, name, mimetype='image/png')
+    return send_from_directory(PUPPETEER_HOME, name, mimetype='image/jepg')
 
 
 @app.route('/', defaults={'path': ''})
@@ -249,7 +249,7 @@ def message_handler(message, data):
                     os.makedirs(PUPPETEER_HOME)
                 urlparse(data['target'])
                 scripting_path = os.path.dirname(os.path.realpath(__file__))
-                snapshot_file_name = "%s.png" % base64.b64encode(
+                snapshot_file_name = "%s.jpg" % base64.b64encode(
                     data['target'].encode()).decode()
                 snapshot_file_path = "%s/%s" % (
                     PUPPETEER_HOME, snapshot_file_name)

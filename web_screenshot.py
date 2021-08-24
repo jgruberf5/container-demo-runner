@@ -10,7 +10,7 @@ async def get_page(url, screen_shot_file_path):
     browser = await launch(args=['--no-sandbox', '--window-size=1920,1080'], headless=True, defaultViewport={'width': 1920, 'height': 1080})
     page = await browser.newPage()
     await page.goto(url)
-    await page.screenshot({'path': screen_shot_file_path})
+    await page.screenshot({'path': screen_shot_file_path, 'type': 'jpeg', 'quality': 50})
     await browser.close()
 
 
