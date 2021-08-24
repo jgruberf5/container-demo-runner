@@ -14,7 +14,7 @@ import dns.resolver
 
 from urllib.parse import urlparse
 
-from flask import Flask, request, render_template, Response
+from flask import Flask, request, render_template, Response, send_from_directory
 from flask_socketio import SocketIO, emit
 
 from threading import Thread, Event
@@ -22,7 +22,7 @@ from threading import Thread, Event
 CONFIG_FILE = os.getenv('CONFIG_FILE', './config.yaml')
 CONFIG_MAP_DIR = '/etc/container-demo-runner'
 NAMESPACE_FILE = '/var/run/secrets/kubernetes.io/serviceaccount/namespace'
-PUPPETEER_HOME = '/tmp/webscreenshots'
+PUPPETEER_HOME = os.getenv('PYPPETEER_HOME', '/tmp/webscreenshots')
 
 config = {}
 
@@ -178,6 +178,11 @@ def runner_ui():
         banner_text_color=banner_text_color)
 
 
+@app.route('/webscreenshots/<path:name>')
+def send_screenshot(name):
+    return send_from_directory(PUPPETEER_HOME, name, mimetype='image/png')
+
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def get_resource(path):  # pragma: no cover
@@ -238,17 +243,18 @@ def message_handler(message, data):
         elif data['type'] == 'webscreenshot':
             print('getting web screen shot for: %s' % data['target'])
             try:
+                if not os.path.exists:
+                    os.makedirs(PUPPETEER_HOME)
                 urlparse(data['target'])
                 scripting_path = os.path.dirname(os.path.realpath(__file__))
                 snapshot_file_name = "%s.png" % base64.b64encode(
                     data['target'].encode()).decode()
-                snapshot_file_path = "%s/static/%s" % (
-                    scripting_path, snapshot_file_name)
+                snapshot_file_path = "%s/%s" % (
+                    PUPPETEER_HOME, snapshot_file_name)
                 cmd = "%s/web_screenshot.py --url '%s' --screenshot '%s'" % (
                     scripting_path, data['target'], snapshot_file_path)
                 print('running command: %s' % cmd)
-                env = {'PYPPETEER_HOME': os.getenv(
-                    'PYPPETEER_HOME', '/tmp/webscreenshots')}
+                env = {'PYPPETEER_HOME': PUPPETEER_HOME}
                 exit_code = run_cmd(request.sid, cmd, data['id'], env)
                 display_response = {
                     'id': data['id'],
