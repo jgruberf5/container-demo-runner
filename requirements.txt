@@ -1,10 +1,12 @@
 appdirs==1.4.4
 autopep8==1.5.7
 bidict==0.21.2
+Brotli==1.0.9
 click==8.0.1
 dnspython==1.16.0
 eventlet==0.31.1
 Flask==2.0.1
+Flask-Compress==1.10.1
 Flask-SocketIO==5.1.1
 greenlet==1.1.1
 h11==0.12.0

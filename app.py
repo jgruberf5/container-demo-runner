@@ -15,6 +15,7 @@ import dns.resolver
 from urllib.parse import urlparse
 
 from flask import Flask, request, render_template, Response, send_from_directory
+from flask_compress import Compress
 from flask_socketio import SocketIO, emit
 
 from threading import Thread, Event
@@ -54,6 +55,7 @@ if 'host_entries' in config:
         eh.write('\n#### end entries added by container-demo-runner ####\n')
 
 app = Flask(__name__)
+Compress(app)
 websocket = SocketIO(app, cors_allowed_origins='*', async_mode='threading')
 
 pids_by_sid = {}
