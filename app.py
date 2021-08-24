@@ -259,7 +259,7 @@ def message_handler(message, data):
                 display_response = {
                     'id': data['id'],
                     'stream': 'image',
-                    'data': "/static/%s" % snapshot_file_name
+                    'data': "/webscreenshots/%s" % snapshot_file_name
                 }
                 print("commandResponse to %s: %s" %
                       (display_response['stream'], display_response['data']))
