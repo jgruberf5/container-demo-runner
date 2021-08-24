@@ -22,6 +22,7 @@ from threading import Thread, Event
 CONFIG_FILE = os.getenv('CONFIG_FILE', './config.yaml')
 CONFIG_MAP_DIR = '/etc/container-demo-runner'
 NAMESPACE_FILE = '/var/run/secrets/kubernetes.io/serviceaccount/namespace'
+PUPPETEER_HOME = '/tmp/webscreenshots'
 
 config = {}
 
@@ -243,8 +244,8 @@ def message_handler(message, data):
                     data['target'].encode()).decode()
                 snapshot_file_path = "%s/static/%s" % (
                     scripting_path, snapshot_file_name)
-                cmd = "%s/web_screenshot.py --url '%s' --screenshot '%s'" % (
-                    scripting_path, data['target'], snapshot_file_path)
+                cmd = "%s/web_screenshot.py --url '%s' --screenshot '%s' --working-directory '%s'" % (
+                    scripting_path, data['target'], snapshot_file_path, PUPPETEER_HOME)
                 print('running command: %s' % cmd)
                 exit_code = run_cmd(request.sid, cmd, data['id'])
                 display_response = {
