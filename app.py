@@ -139,13 +139,13 @@ def command_allowed(cmd):
     return allowed
 
 
-def run_cmd(sid, cmd, id):
+def run_cmd(sid, cmd, id, env=None):
     destroy_all_processes_for_sid(sid)
     if isinstance(cmd, list):
         cmd = shlex.join(cmd)
     print('running cmd: %s with id: %s' % (cmd, id))
     process = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True)
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True, env=env)
     pids_by_sid[sid] = [process.pid]
     stdout_kill_event = Event()
     stderr_kill_event = Event()
@@ -244,10 +244,12 @@ def message_handler(message, data):
                     data['target'].encode()).decode()
                 snapshot_file_path = "%s/static/%s" % (
                     scripting_path, snapshot_file_name)
-                cmd = "%s/web_screenshot.py --url '%s' --screenshot '%s' --working-directory '%s'" % (
-                    scripting_path, data['target'], snapshot_file_path, PUPPETEER_HOME)
+                cmd = "%s/web_screenshot.py --url '%s' --screenshot '%s'" % (
+                    scripting_path, data['target'], snapshot_file_path)
                 print('running command: %s' % cmd)
-                exit_code = run_cmd(request.sid, cmd, data['id'])
+                env = {'PYPPETEER_HOME': os.getenv(
+                    'PYPPETEER_HOME', '/tmp/webscreenshots')}
+                exit_code = run_cmd(request.sid, cmd, data['id'], env)
                 display_response = {
                     'id': data['id'],
                     'stream': 'image',
