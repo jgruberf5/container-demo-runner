@@ -46,6 +46,7 @@ allowed_commands:
   - "^curl"
   - "^whois"
   - "^kubectl"
+  - "^netperf"
   - "^iperf"
 #host_entries: |
 #  104.21.192.109    ifconfig.io
@@ -66,7 +67,7 @@ data:
   ws_listen_address: "0.0.0.0"
   ws_listen_port: "5678"
   allowed_commands: |
-    ["^ping", "^cat /etc/hosts", "^cat /etc/resolv.conf", "^env$", "^ip route$", "^ip addr$", "^ip link$", "^ip neigh", "^netstat", "^dig", "^nc", "^ab", "^siege", "^tcping", "^traceroute", "^tcptraceroute", "^curl", "^whois", "^kubectl", "^iperf"]
+    ["^ping", "^cat /etc/hosts", "^cat /etc/resolv.conf", "^env$", "^ip route$", "^ip addr$", "^ip link$", "^ip neigh", "^netstat", "^dig", "^nc", "^ab", "^siege", "^tcping", "^traceroute", "^tcptraceroute", "^curl", "^whois", "^kubectl", "^netperf", "^iperf"]
   host_entries: |
     104.21.192.109    ifconfig.io
 ```

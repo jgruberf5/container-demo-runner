@@ -23,4 +23,5 @@ allowed_commands:
   - "^curl"
   - "^whois"
   - "^kubectl"
+  - "^netperf"
   - "^iperf"

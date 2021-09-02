@@ -22,6 +22,7 @@ RUN apt-get update && \
     net-tools \
     netcat \
     netbase \
+    netperf \
     iperf \
     traceroute \
     iproute2 \
