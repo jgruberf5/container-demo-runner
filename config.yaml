@@ -24,4 +24,6 @@ allowed_commands:
   - "^whois"
   - "^kubectl"
   - "^netperf"
+  - "^netserver"
   - "^iperf"
+  - "^iperf3"

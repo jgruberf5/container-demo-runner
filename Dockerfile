@@ -24,6 +24,7 @@ RUN apt-get update && \
     netbase \
     netperf \
     iperf \
+    iperf3 \
     traceroute \
     iproute2 \
     python3-pip \
@@ -80,5 +81,7 @@ RUN pip3 install -r /container-demo-runner/requirements.txt
 
 EXPOSE 8080
 EXPOSE 5001
+EXPOSE 5201
+EXPOSE 12865
 
 ENTRYPOINT [ "/container-demo-runner/run.sh" ]
