@@ -25,6 +25,7 @@ RUN apt-get update && \
     netperf \
     iperf \
     iperf3 \
+    flent \
     traceroute \
     iproute2 \
     python3-pip \

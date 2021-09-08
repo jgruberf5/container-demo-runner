@@ -27,3 +27,4 @@ allowed_commands:
   - "^netserver"
   - "^iperf"
   - "^iperf3"
+  - "^flent"
