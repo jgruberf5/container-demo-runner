@@ -7,7 +7,7 @@ This container hosts a web service and websocket service which enable exposure o
 By default the web interface and web socket services are started on port 8080. 
 
 ```bash
-docker run --rm -p 8080:8080 -p 5001:5001 --name container-demo-runner jgruberf5/container-demo-runner:latest
+docker run --rm -p 8080:8080 -p 5001:5001 -p 12865:12865 --name container-demo-runner jgruberf5/container-demo-runner:latest
 ```
 
 Then open a web browser to `http://localhost:8080` .
@@ -47,7 +47,10 @@ allowed_commands:
   - "^whois"
   - "^kubectl"
   - "^netperf"
+  - "^netserver"
   - "^iperf"
+  - "^iperf3"
+  - "^flent"
 #host_entries: |
 #  104.21.192.109    ifconfig.io
 ```
@@ -67,7 +70,7 @@ data:
   ws_listen_address: "0.0.0.0"
   ws_listen_port: "5678"
   allowed_commands: |
-    ["^ping", "^cat /etc/hosts", "^cat /etc/resolv.conf", "^env$", "^ip route$", "^ip addr$", "^ip link$", "^ip neigh", "^netstat", "^dig", "^nc", "^ab", "^siege", "^tcping", "^traceroute", "^tcptraceroute", "^curl", "^whois", "^kubectl", "^netperf", "^iperf"]
+    ["^ping", "^cat /etc/hosts", "^cat /etc/resolv.conf", "^env$", "^ip route$", "^ip addr$", "^ip link$", "^ip neigh", "^netstat", "^dig", "^nc", "^ab", "^siege", "^tcping", "^traceroute", "^tcptraceroute", "^curl", "^whois", "^kubectl", "^netperf", "^netserver", "^iperf", "^iperf3", "^flent"]
   host_entries: |
     104.21.192.109    ifconfig.io
 ```
