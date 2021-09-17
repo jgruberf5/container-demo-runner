@@ -1,6 +1,6 @@
 #!/bin/bash
 
-netserver -4 -N
+sockperf --tcp --daemonize
 
 dir=$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
 

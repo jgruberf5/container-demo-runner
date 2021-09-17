@@ -22,7 +22,7 @@ RUN apt-get update && \
     net-tools \
     netcat \
     netbase \
-    netperf \
+    sockperf \
     iperf \
     iperf3 \
     flent \
@@ -83,6 +83,6 @@ RUN pip3 install -r /container-demo-runner/requirements.txt
 EXPOSE 8080
 EXPOSE 5001
 EXPOSE 5201
-EXPOSE 12865
+EXPOSE 11111
 
 ENTRYPOINT [ "/container-demo-runner/run.sh" ]

@@ -33,7 +33,7 @@ metadata:
   namespace: default
 data:
   allowed_commands: |
-    ["^ping", "^cat /etc/hosts", "^cat /etc/resolv.conf", "^env$", "^ip route$", "^ip addr$", "^ip link$", "^ip neigh", "^netstat", "^dig", "^nc", "^ab", "^siege", "^tcping", "^traceroute", "^tcptraceroute", "^curl", "^whois", "^kubectl", "^netperf", "^netserver", "^iperf", "^iperf3", "^flent"]
+    ["^ping", "^cat /etc/hosts", "^cat /etc/resolv.conf", "^env$", "^ip route$", "^ip addr$", "^ip link$", "^ip neigh", "^netstat", "^dig", "^nc", "^ab", "^siege", "^tcping", "^traceroute", "^tcptraceroute", "^curl", "^whois", "^kubectl", "^sockperf", "^iperf", "^iperf3"]
   http_listen_address: "0.0.0.0"
   http_listen_port: "8080"
   ws_listen_address: "0.0.0.0"
@@ -73,7 +73,7 @@ spec:
           protocol: TCP
         - containerPort: 5201
           protocol: TCP
-        - containerPort: 12865
+        - containerPort: 11111
           protocol: TCP
         volumeMounts:
         - name: diag-container-volume
@@ -173,27 +173,27 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: diag-container-netperf-in-cluster
+  name: diag-container-sockperf-in-cluster
   namespace: default
 spec:
   type: ClusterIP
   selector:
     app: diag-container-app
   ports:
-  - name: http
-    port: 12865
-    targetPort: 12865
+  - name: sockperf
+    port: 11111
+    targetPort: 11111
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: diag-container-netperf
+  name: diag-container-sockperf
   namespace: default
 spec:
   type: NodePort
   selector:
     app: diag-container-app
   ports:
-  - name: http
-    port: 12865
-    nodePort: 31865
+  - name: sockperf
+    port: 11111
+    nodePort: 31111
