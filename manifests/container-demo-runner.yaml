@@ -196,4 +196,4 @@ spec:
   ports:
   - name: http
     port: 12865
-    nodePort: 32865
+    nodePort: 31865
