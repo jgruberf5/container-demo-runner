@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sockperf --tcp --daemonize
+sockperf server --tcp --daemonize
 
 dir=$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
 
