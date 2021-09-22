@@ -114,6 +114,10 @@
                         HTTP GET (statistics)
                     </button>
                     <button class="btn btn-outline-secondary m-2 collapsed" type="button" data-toggle="collapse"
+                        data-target="#collapseSockperf" aria-expanded="true" aria-controls="collapseSockperf">
+                        Performance Test
+                    </button>
+                    <button class="btn btn-outline-secondary m-2 collapsed" type="button" data-toggle="collapse"
                         data-target="#collapseWebscreenshot" aria-expanded="true" aria-controls="collapseWebscreenshot">
                         Web Screenshot
                     </button>
@@ -222,6 +226,37 @@
                         </div>
                         <div>
                             <button id='geturlbutton' class="btn btn-outline-secondary m-2">GET</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="collapseSockperf" class="collapse" aria-labelledby="headingFunctions"
+                data-parent="#accordionFunctions">
+                <div class="card-body">
+                    <div class='form-group row m-1' id='sockperfgroup'>
+                        <label class='text-secondary m-2'>source label:</label>
+                        <div class="col-sm-2">
+                            <input class='form-control m-2' type='text' id='sockperfsourcelabel' placeholder=''>
+                        </div>
+                        <label class='text-secondary m-2'>target label:</label>
+                        <div class="col-sm-2">
+                            <input class='form-control m-2' type='text' id='sockperftargetlabel' placeholder=''>
+                        </div>
+                        <label class='text-secondary m-2'>target: (IP/DNS)</label>
+                        <div class="col-sm-2">
+                            <input class='form-control m-2' type='text' id='sockperftarget' placeholder=''>
+                        </div>
+                        <label class='text-secondary m-2'>port:</label>
+                        <div class="col-sm-2">
+                            <input class='form-control m-2' type='number' id='sockperfport' min='1' max='65535' placeholder='11111' value='11111'>
+                        </div>
+                        <label class='text-secondary m-2'>runs:</label>
+                        <div class="col-sm-2">
+                            <input class='form-control m-1' type='number' id='sockperfcount' min='1' max='100' placeholder='1'>
+                        </div>
+                        <div>
+                            <button id='runsockperfbutton' class="btn btn-outline-secondary m-2">RUN</button>
                         </div>
                     </div>
                 </div>
@@ -343,6 +378,7 @@
                 if (message.variableName == "wsHostname") {
                     wsHostname = message.variableValue;
                     $('#hostname').removeClass('text-danger').addClass('text-success').text(wsHostname);
+                    $('#sockperfsourcelabel').val(wsHostname);
                     $('#outputs').hide();
                     stopSpin();
                     resetUI();
@@ -600,6 +636,19 @@
                         $('#dnshost').val(),
                         recordType
                     ]
+                }
+                issueCmd(cmd)
+            });
+
+            $('#runsockperfbutton').click( function () {
+                let cmd = {
+                    type: 'performance',
+                    target: $('#sockperftarget').val(),
+                    port: $('#sockperfport').val(),
+                    sourcelabel: $('#sockperfsourcelabel').val(),
+                    targetlabel: $('#sockperftargetlabel').val(),
+                    runcount: $('#sockperfcount').val(),
+                    cmd: ''
                 }
                 issueCmd(cmd)
             });

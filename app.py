@@ -164,6 +164,105 @@ def run_cmd(sid, cmd, id, env=None):
     return process.returncode
 
 
+def performance_test(sid, id, sourcelabel, targetlabel, target, port, runcount):
+    destroy_all_processes_for_sid(sid)
+    stdout_response = {
+        'id': id,
+        'stream': 'stdout',
+        'data': "source_host, target_host, avg_latency_usec, 32k_throughput_mbits, 64k_throughput_mbits, 128k_throughput_mbits, 1M_throughput_mbits\n"
+    }
+    websocket.emit('commandResponse', stdout_response)
+    try:
+        for i in range(runcount):
+            print('running performance test (%d/%d)' % ((i + 1), runcount))
+            stdout_response = {
+                'id': id,
+                'stream': 'stdout',
+                'data': "%s, %s, " % (sourcelabel, targetlabel)
+            }
+            websocket.emit('commandResponse', stdout_response)
+            cmd = "sockperf ping-pong --tcp -i %s -p %d | grep Summary | cut -d' ' -f5" % (target, port)
+            print('    test : %s' % cmd)
+            process = subprocess.Popen(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True
+            )
+            pids_by_sid[sid] = [process.pid]
+            output = process.communicate()[0].strip()
+            stdout_response = {
+                'id': id,
+                'stream': 'stdout',
+                'data': "%s, " % output
+            }
+            websocket.emit('commandResponse', stdout_response)
+            cmd = "sockperf throughput --tcp -i %s -m 32768 -p %s | grep BandWidth | cut -d'(' -f2 | cut -d' ' -f1" % (
+                target, port)
+            print('    test : %s' % cmd)
+            process = subprocess.Popen(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True
+            )
+            pids_by_sid[sid] = [process.pid]
+            output = process.communicate()[0].strip()
+            stdout_response = {
+                'id': id,
+                'stream': 'stdout',
+                'data': "%s, " % output
+            }
+            websocket.emit('commandResponse', stdout_response)
+            cmd = "sockperf throughput --tcp -i %s -m 65536 -p %s | grep BandWidth | cut -d'(' -f2 | cut -d' ' -f1" % (
+                target, port)
+            print('    test : %s' % cmd)
+            process = subprocess.Popen(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True
+            )
+            pids_by_sid[sid] = [process.pid]
+            output = process.communicate()[0].strip()
+            stdout_response = {
+                'id': id,
+                'stream': 'stdout',
+                'data': "%s, " % output
+            }
+            websocket.emit('commandResponse', stdout_response)
+            cmd = "sockperf throughput --tcp -i %s -m 131072 -p %s | grep BandWidth | cut -d'(' -f2 | cut -d' ' -f1" % (
+                target, port)
+            print('    test : %s' % cmd)
+            process = subprocess.Popen(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True
+            )
+            pids_by_sid[sid] = [process.pid]
+            output = process.communicate()[0].strip()
+            stdout_response = {
+                'id': id,
+                'stream': 'stdout',
+                'data': "%s, " % output
+            }
+            websocket.emit('commandResponse', stdout_response)
+            cmd = "sockperf throughput --tcp -i %s -m 1048575 -p %s | grep BandWidth | cut -d'(' -f2 | cut -d' ' -f1" % (
+                target, port)
+            print('    test : %s' % cmd)
+            process = subprocess.Popen(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True
+            )
+            pids_by_sid[sid] = [process.pid]
+            output = process.communicate()[0].strip()
+            stdout_response = {
+                'id': id,
+                'stream': 'stdout',
+                'data': "%s\n" % output
+            }
+            websocket.emit('commandResponse', stdout_response)
+        return 0
+    except Exception as e:
+        error_response = {
+            'id': id,
+            'stream': 'stderr',
+            'data': "error running test on target: %s - %s - %s.. \n\n" % (target, e.__class__.__name__, e)
+        }
+        print("commandResponse to %s: %s" %
+              (error_response['stream'], error_response['data']))
+        websocket.emit('commandResponse', error_response)
+        return -1
+
+
 @app.route('/')
 def runner_ui():
     host = request.host
@@ -234,6 +333,39 @@ def message_handler(message, data):
             if data['cmd'][0] == 'nameserver':
                 response['variableValue'] = getNameserver()
             emit('variableResponse', response)
+        elif data['type'] == 'performance':
+            print('running performance test with target: %s:%d' %
+                  (data['target'], int(data['port'])))
+            try:
+                data['target'] = socket.gethostbyname(data['target'])
+
+                exit_code = performance_test(
+                    request.sid, data['id'], data['sourcelabel'], data['targetlabel'], data['target'], int(data['port']), int(data['runcount']))
+                complete_response = {
+                    'id': data['id'],
+                    'stream': 'completed',
+                    'data': exit_code
+                }
+                print("commandResponse to %s: %s" %
+                      (complete_response['stream'], complete_response['data']))
+                emit('commandResponse', complete_response)
+            except Exception as e:
+                error_response = {
+                    'id': data['id'],
+                    'stream': 'stderr',
+                    'data': "target: %s is not valid. %s - %s\n\n" % (data['target'], e.__class__.__name__, e)
+                }
+                print("commandResponse to %s: %s" %
+                      (error_response['stream'], error_response['data']))
+                emit('commandResponse', error_response)
+                complete_response = {
+                    'id': data['id'],
+                    'stream': 'completed',
+                    'data': -1
+                }
+                print("commandResponse to %s: %s" %
+                      (complete_response['stream'], complete_response['data']))
+                emit('commandResponse', complete_response)
         elif data['type'] == 'halt':
             destroy_all_processes_for_sid(request.sid)
             complete_response = {
