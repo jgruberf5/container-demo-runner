@@ -181,7 +181,7 @@ def performance_test(sid, id, sourcelabel, targetlabel, target, port, runcount):
                 'data': "%s, %s, " % (sourcelabel, targetlabel)
             }
             websocket.emit('commandResponse', stdout_response)
-            cmd = "sockperf ping-pong --tcp -i %s -p %d | grep Summary | cut -d' ' -f5" % (target, port)
+            cmd = "sockperf ping-pong --tcp -i %s -p %d | grep avg-latency | cut -d' ' -f3 | cut -d'=' -f2" % (target, port)
             print('    test : %s' % cmd)
             process = subprocess.Popen(
                 cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True
