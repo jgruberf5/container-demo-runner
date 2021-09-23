@@ -164,6 +164,20 @@ def run_cmd(sid, cmd, id, env=None):
     return process.returncode
 
 
+def get_latency_from_ping_pong_output(output):
+    match = re.search(r'avg-latency=(.*)\(std-dev=', output)
+    if match:
+        return match.group(1).strip()
+    else:
+        return ''
+
+def get_bandwidth_from_throughput_output(output):
+    match = re.search(r'MBps \((.*)Mbps', output)
+    if match:
+        return match.group(1).strip()
+    else:
+        return ''
+
 def performance_test(sid, id, sourcelabel, targetlabel, target, port, runcount, latency, bandwidth):
     destroy_all_processes_for_sid(sid)
     header = "source_host, target_host"
@@ -188,7 +202,7 @@ def performance_test(sid, id, sourcelabel, targetlabel, target, port, runcount, 
             }
             websocket.emit('commandResponse', labels_stdout_response)
             if latency:
-                cmd = "sockperf ping-pong --tcp -i %s -p %d | grep avg-latency | cut -d' ' -f3 | cut -d'=' -f2" % (target, port)
+                cmd = "sockperf ping-pong --tcp -i %s -p %d" % (target, port)
                 print('    test : %s' % cmd)
                 output = ''
                 while len(output) < 1:
@@ -196,10 +210,16 @@ def performance_test(sid, id, sourcelabel, targetlabel, target, port, runcount, 
                         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True
                     )
                     pids_by_sid[sid] = [process.pid]
-                    output = process.communicate()[0].strip()
-                    if process.returncode > 0:
-                        print('    latency test failed with return code: %d' % process.returncode)
-                    print('    output: %s' % output)
+                    full_out = process.communicate()[0]
+                    output = get_latency_from_ping_pong_output(full_out)
+                    if process.returncode > 0 or len(output) == 0:
+                        error_response = {
+                            'id': id,
+                            'stream': 'stderr',
+                            'data': full_out
+                        }
+                        websocket.emit('commandResponse', error_response)
+                    print('    output: %d: %s' % (process.returncode, output))
                 latency_stdout_response = {
                     'id': id,
                     'stream': 'stdout',
@@ -208,15 +228,25 @@ def performance_test(sid, id, sourcelabel, targetlabel, target, port, runcount, 
                 websocket.emit('commandResponse', latency_stdout_response)
             if bandwidth:
                 for msg_size in ['32768', '65536', '131072', '1048575']:
-                    cmd = "sockperf throughput --tcp -i %s -p %s -m %s | grep BandWidth | cut -d'(' -f2 | cut -d' ' -f1" % (
+                    cmd = "sockperf throughput --tcp -i %s -p %s -m %s" % (
                         target, port, msg_size)
                     print('    test : %s' % cmd)
-                    process = subprocess.Popen(
-                        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True
-                    )
-                    pids_by_sid[sid] = [process.pid]
-                    output = process.communicate()[0].strip()
-                    print('    output: %s' % output)
+                    output = ''
+                    while len(output) < 1:
+                        process = subprocess.Popen(
+                            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True
+                        )
+                        pids_by_sid[sid] = [process.pid]
+                        full_out = process.communicate()[0]
+                        output = get_bandwidth_from_throughput_output(full_out)
+                        if process.returncode > 0 or len(output) == 0:
+                            error_response = {
+                                'id': id,
+                                'stream': 'stderr',
+                                'data': full_out
+                            }
+                            websocket.emit('commandResponse', error_response)
+                        print('    output: %d: %s' % (process.returncode, output))
                     bandwidth_stdout_response = {
                         'id': id,
                         'stream': 'stdout',
