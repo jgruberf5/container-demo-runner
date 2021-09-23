@@ -171,12 +171,14 @@ def get_latency_from_ping_pong_output(output):
     else:
         return ''
 
+
 def get_bandwidth_from_throughput_output(output):
     match = re.search(r'MBps \((.*)Mbps', output)
     if match:
         return match.group(1).strip()
     else:
         return ''
+
 
 def performance_test(sid, id, sourcelabel, targetlabel, target, port, runcount, latency, bandwidth):
     destroy_all_processes_for_sid(sid)
@@ -213,6 +215,7 @@ def performance_test(sid, id, sourcelabel, targetlabel, target, port, runcount, 
                     full_out = process.communicate()[0]
                     output = get_latency_from_ping_pong_output(full_out)
                     if process.returncode > 0 or len(output) == 0:
+                        full_out = "%s\n%s" % (cmd, full_out)
                         error_response = {
                             'id': id,
                             'stream': 'stderr',
@@ -240,19 +243,22 @@ def performance_test(sid, id, sourcelabel, targetlabel, target, port, runcount, 
                         full_out = process.communicate()[0]
                         output = get_bandwidth_from_throughput_output(full_out)
                         if process.returncode > 0 or len(output) == 0:
+                            full_out = "%s\n%s" % (cmd, full_out)
                             error_response = {
                                 'id': id,
                                 'stream': 'stderr',
                                 'data': full_out
                             }
                             websocket.emit('commandResponse', error_response)
-                        print('    output: %d: %s' % (process.returncode, output))
+                        print('    output: %d: %s' %
+                              (process.returncode, output))
                     bandwidth_stdout_response = {
                         'id': id,
                         'stream': 'stdout',
                         'data': ", %s" % output
                     }
-                    websocket.emit('commandResponse', bandwidth_stdout_response)
+                    websocket.emit('commandResponse',
+                                   bandwidth_stdout_response)
             eor_stdout_response = {
                 'id': id,
                 'stream': 'stdout',
