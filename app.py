@@ -215,7 +215,7 @@ def performance_test(sid, id, sourcelabel, targetlabel, target, port, runcount, 
                     full_out = process.communicate()[0]
                     output = get_latency_from_ping_pong_output(full_out)
                     if process.returncode > 0 or len(output) == 0:
-                        full_out = "%s\n%s" % (cmd, full_out)
+                        full_out = "%s\n%s\n\n" % (cmd, full_out)
                         error_response = {
                             'id': id,
                             'stream': 'stderr',
@@ -243,7 +243,7 @@ def performance_test(sid, id, sourcelabel, targetlabel, target, port, runcount, 
                         full_out = process.communicate()[0]
                         output = get_bandwidth_from_throughput_output(full_out)
                         if process.returncode > 0 or len(output) == 0:
-                            full_out = "%s\n%s" % (cmd, full_out)
+                            full_out = "%s\n%s\n\n" % (cmd, full_out)
                             error_response = {
                                 'id': id,
                                 'stream': 'stderr',
