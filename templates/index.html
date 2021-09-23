@@ -276,8 +276,18 @@
                             </div>
                         </div>
                         <div class="row">
+                            <label class='text-secondary m-2'>latency test:</label>
+                            <div class="col-1 mx-1 my-2">
+                                <input class='form-check-input' type='checkbox' id='sockperflatency' checked>
+                            </div>
+                            <label class='text-secondary m-2'>bandwidth tests:</label>
+                            <div class="col-1 mx-1 my-2">
+                                <input class='form-check-input' type='checkbox' id='sockperfbandwidth' checked>
+                            </div>
+                        </div>
+                        <div class="row">
                             <label class='text-secondary m-2'>runs:</label>
-                            <div class="col-sm-3">
+                            <div class="col-1">
                                 <input class='form-control m-1' type='number' id='sockperfcount' min='1' max='100'
                                     placeholder='1' value='1'>
                             </div>
@@ -686,6 +696,8 @@
                     port: $('#sockperfport').val(),
                     sourcelabel: $('#sockperfsourcelabel').val(),
                     targetlabel: $('#sockperftargetlabel').val(),
+                    latency: $('#sockperflatency').is(':checked'),
+                    bandwidth: $('#sockperfbandwidth').is(':checked'),
                     runcount: $('#sockperfcount').val(),
                     cmd: ''
                 }
