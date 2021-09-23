@@ -172,23 +172,22 @@ def performance_test(sid, id, sourcelabel, targetlabel, target, port, runcount, 
     if bandwidth:
         header = "%s, 32k_throughput_mbits, 64k_throughput_mbits, 128k_throughput_mbits, 1M_throughput_mbits" % header
     header = "%s\n" % header
-    stdout_response = {
+    header_stdout_response = {
         'id': id,
         'stream': 'stdout',
         'data': header
     }
-    websocket.emit('commandResponse', stdout_response)
+    websocket.emit('commandResponse', header_stdout_response)
     try:
         for i in range(runcount):
             print('running performance test (%d/%d)' % ((i + 1), runcount))
-            stdout_response = {
+            labels_stdout_response = {
                 'id': id,
                 'stream': 'stdout',
                 'data': "%s, %s" % (sourcelabel, targetlabel)
             }
-            websocket.emit('commandResponse', stdout_response)
+            websocket.emit('commandResponse', labels_stdout_response)
             if latency:
-                websocket.emit('commandResponse', stdout_response)
                 cmd = "sockperf ping-pong --tcp -i %s -p %d | grep avg-latency | cut -d' ' -f3 | cut -d'=' -f2" % (target, port)
                 print('    test : %s' % cmd)
                 output = ''
@@ -201,12 +200,12 @@ def performance_test(sid, id, sourcelabel, targetlabel, target, port, runcount, 
                     if process.returncode > 0:
                         print('    latency test failed with return code: %d' % process.returncode)
                     print('    output: %s' % output)
-                stdout_response = {
+                latency_stdout_response = {
                     'id': id,
                     'stream': 'stdout',
                     'data': ", %s" % output
                 }
-                websocket.emit('commandResponse', stdout_response)
+                websocket.emit('commandResponse', latency_stdout_response)
             if bandwidth:
                 for msg_size in ['32768', '65536', '131072', '1048575']:
                     cmd = "sockperf throughput --tcp -i %s -p %s -m %s | grep BandWidth | cut -d'(' -f2 | cut -d' ' -f1" % (
@@ -218,18 +217,18 @@ def performance_test(sid, id, sourcelabel, targetlabel, target, port, runcount, 
                     pids_by_sid[sid] = [process.pid]
                     output = process.communicate()[0].strip()
                     print('    output: %s' % output)
-                    stdout_response = {
+                    bandwidth_stdout_response = {
                         'id': id,
                         'stream': 'stdout',
                         'data': ", %s" % output
                     }
-                    websocket.emit('commandResponse', stdout_response)
-            stdout_response = {
+                    websocket.emit('commandResponse', bandwidth_stdout_response)
+            eor_stdout_response = {
                 'id': id,
                 'stream': 'stdout',
                 'data': "\n"
             }
-            websocket.emit('commandResponse', stdout_response)
+            websocket.emit('commandResponse', eor_stdout_response)
         return 0
     except Exception as e:
         error_response = {
