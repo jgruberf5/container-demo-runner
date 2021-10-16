@@ -114,3 +114,86 @@ The main index page will show a visual banner if the following environment varia
 | BANNER | The text of the Banner to Display |
 | BANNER_COLOR | The background collor of your banner in 'rrggbb' hex format. ie: ff0000 for bright red |
 | BANNER_TEXT_COLOER | The text collor for your banner in 'rrggbb' hex format. ie: ffffff for white lettering |
+
+## Command Line Client Scripting
+
+The repository also includes a command line web service client. To run the command line client from the repository directory run:
+
+```bash
+pip3 install -r requirements.txt
+./demo-runner.py
+```
+Default options can be see by issuing the `--help` option:
+
+```bash
+$ ./demo-runner.py --help
+usage: demo-runner.py [options] url cmd
+
+run a remote command on a demo-runner server
+
+positional arguments:
+  url                   target demo runner to perform command
+  cmd                   command to run
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -t PERFORMANCE_TARGET, --performance_target PERFORMANCE_TARGET
+                        target name or IP for the performance report
+  -p PERFORMANCE_TARGET_PORT, --performance_target_port PERFORMANCE_TARGET_PORT
+                        target port for the performance report
+  -c PERFORMANCE_RUN_COUNT, --performance_run_count PERFORMANCE_RUN_COUNT
+                        number of performance tests in report
+  -l, --performance_latency
+                        include latency stats in performance report
+  -b, --performance_bandwidth
+                        include bandwidth stats in the performance report
+  -sl PERFORMANCE_SOURCE_LABEL, --performance_source_label PERFORMANCE_SOURCE_LABEL
+                        performance source label in report
+  -tl PERFORMANCE_TARGET_LABEL, --performance_target_label PERFORMANCE_TARGET_LABEL
+                        performance target label in report
+
+If cmd is set to "performance", please include the following:
+
+--performance-target, -t = target name or IP for the performance report
+--performance-target-port, -p = target port (default is 11111)
+--performance-run-count, -c = number of runs in the report
+--performance-latency, -l =  include latency measurement in report
+--performance-bandwidth, -b = include bandwidth measurement in report
+--performance-source-label, -sl = your report source label
+--performance-target-label, -tl = your report target label
+
+```
+
+You can run a command by targetting the running container server by URL as the first argument and the command to run as the second argument. If the command is allowed on the remote server, it will be executed from the remote contain and the `stdout` and `stderr` will be sent to your terminal `stdout` and `stderr`.
+
+```bash
+$ ./demo-runner.py http://ibm-k8s-us-east-1.appinsights.io 'ping -c 5 www.google.com'
+PING www.google.com (142.250.68.132) 56(84) bytes of data.
+64 bytes from dfw28s27-in-f4.1e100.net (142.250.68.132): icmp_seq=1 ttl=116 time=30.8 ms
+64 bytes from dfw28s27-in-f4.1e100.net (142.250.68.132): icmp_seq=2 ttl=116 time=30.8 ms
+64 bytes from dfw28s27-in-f4.1e100.net (142.250.68.132): icmp_seq=3 ttl=116 time=30.8 ms
+64 bytes from dfw28s27-in-f4.1e100.net (142.250.68.132): icmp_seq=4 ttl=116 time=30.8 ms
+64 bytes from dfw28s27-in-f4.1e100.net (142.250.68.132): icmp_seq=5 ttl=116 time=30.8 ms
+
+--- www.google.com ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 4006ms
+rtt min/avg/max/mdev = 30.790/30.823/30.840/0.018 ms
+```
+
+If you want to run the embedded performance test, there are addition command line options to define to format the output report.
+
+
+```bash
+$ ./demo-runner.py http://ibm-k8s-us-east-1.appinsights.io  performance -sl k8s_dc -tl k8s_dallas -t sockperf-in-dallas.ves-system -p 11112 -c 10 -l -b 2>/dev/null
+source_host, target_host, avg_latency_usec, 32k_throughput_mbits, 64k_throughput_mbits, 128k_throughput_mbits, 1M_throughput_mbits
+k8s_dc, k8s_dallas, 15724.503, 206.500, 193.500, 276.000, 200.000
+k8s_dc, k8s_dallas, 16308.453, 266.500, 189.000, 270.000, 280.000
+k8s_dc, k8s_dallas, 22197.107, 270.000, 195.500, 194.000, 200.000
+k8s_dc, k8s_dallas, 21993.921, 297.250, 210.500, 303.000, 232.000
+k8s_dc, k8s_dallas, 15645.346, 314.250, 214.000, 319.000, 320.000
+k8s_dc, k8s_dallas, 15745.421, 240.000, 141.000, 288.000, 216.000
+k8s_dc, k8s_dallas, 22202.887, 205.750, 300.500, 216.000, 192.000
+k8s_dc, k8s_dallas, 15694.005, 272.500, 271.500, 162.000, 264.000
+k8s_dc, k8s_dallas, 22040.820, 183.500, 194.000, 271.000, 184.000
+k8s_dc, k8s_dallas, 21961.309, 165.000, 167.000, 253.000, 176.000
+```
