@@ -318,12 +318,12 @@ def get_resource(path):  # pragma: no cover
 
 @websocket.on('connect')
 def client_connect():
-    print('client connected with sid:' % request.sid)
+    print('client connected with sid: %s' % request.sid)
 
 
 @websocket.on('disconnect')
 def client_disconnect():
-    print('client disconnected with sid:' % request.sid)
+    print('client disconnected with sid: %s' % request.sid)
     destroy_all_processes_for_sid(request.sid)
 
 
