@@ -117,7 +117,7 @@ The main index page will show a visual banner if the following environment varia
 
 ## Command Line Client Scripting
 
-The repository also includes a command line web service client. To run the command line client from the repository directory run:
+The repository also includes a command line web service client. To run the command line client from the repository `cli` directory run:
 
 ```bash
 pip3 install -r requirements.txt
