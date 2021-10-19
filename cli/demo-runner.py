@@ -51,12 +51,12 @@ If cmd is set to "performance", please include the following:
     ap.add_argument(
         'url',
         help='target demo runner to perform command',
-        nargs=1
+        nargs='?'
     )
     ap.add_argument(
         'cmd',
         help='command to run',
-        nargs=1
+        nargs='?'
     )
     ap.add_argument(
         '-t', '--performance_target',
@@ -105,19 +105,32 @@ If cmd is set to "performance", please include the following:
     if args.performance_bandwidth:
         bandwidth = True
 
+    url = args.url
+    if not args.url:
+        url = os.getenv('URL', None)
+    
+    cmd = args.cmd
+    if not cmd:
+        cmd = os.getenv('CMD', None)
+    
+    if not url or not cmd:
+        ap.print_help()
+        print("URL and cmd arguments required\n\n")
+        sys.exit(1)
+
     try:
-        pu = urlparse(args.url[0])
+        pu = urlparse(url)
         if pu.scheme not in ['http', 'https']:
             raise Exception('bad scheme')
     except:
         ap.print_help()
-        print("INVALID URL: %s\n\n" % args.url[0])
+        print("INVALID URL: %s\n\n" % url)
         sys.exit(1)
 
     try:
-        sio.connect(args.url[0])
+        sio.connect(url)
         request_uuid = str(uuid.uuid4())
-        if args.cmd[0] == 'performance':
+        if cmd == 'performance':
             commandRequest = {
                 'id': request_uuid,
                 'type': 'performance',
@@ -135,12 +148,12 @@ If cmd is set to "performance", please include the following:
             commandRequest = {
                 'id': request_uuid,
                 'type': 'Running Command',
-                'target': args.cmd[0],
-                'cmd': args.cmd[0]
+                'target': cmd,
+                'cmd': cmd
             }
             sio.emit('message', data=('commandRequest', commandRequest))
     except Exception as ex:
-        print("Unable to connect to: %s - %s" % (args.url[0], ex))
+        print("Unable to run command %s on %s - %s" % (cmd, url, ex))
         sys.exit(1)
 
 
