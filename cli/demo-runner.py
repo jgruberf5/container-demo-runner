@@ -4,6 +4,7 @@ import sys
 import argparse
 import socketio
 import uuid
+import signal
 
 from urllib.parse import urlparse
 
@@ -24,6 +25,15 @@ def command_response(data):
         sys.stdout.write(data['data'])
     if data['stream'] == 'stderr':
         sys.stderr.write(data['data'])
+
+
+def sig_hanler(sig, fame):
+    print('sending halt to server')
+    commandRequest = {
+        'id': 1,
+        'type': 'halt'
+    }
+    sio.emit('message', data=('commandRequest', commandRequest))
 
 
 def main():
@@ -128,6 +138,7 @@ If cmd is set to "performance", please include the following:
         sys.exit(1)
 
     try:
+        signal.signal(signal.SIGINT, sig_hanler)
         sio.connect(url)
         request_uuid = str(uuid.uuid4())
         if cmd == 'performance':

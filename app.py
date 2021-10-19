@@ -120,6 +120,8 @@ def destroy_pid(pid):
         del process_runner['stderr_kill_event']
         os.kill(pid, signal.SIGKILL)
         del runners[pid]
+    else:
+        os.kill(pid, signal.SIGKILL)
 
 
 def destroy_all_processes_for_sid(sid):
@@ -382,6 +384,7 @@ def message_handler(message, data):
                 emit('commandResponse', complete_response)
         elif data['type'] == 'halt':
             destroy_all_processes_for_sid(request.sid)
+            print('halting all commands for sid: %s' % request.sid)
             complete_response = {
                 'id': data['id'],
                 'stream': 'completed',
@@ -439,6 +442,7 @@ def message_handler(message, data):
                 emit('commandResponse', complete_response)
         else:
             if command_allowed(data['cmd']):
+                print('running %s for sid: %s' % (data['cmd'], request.sid))
                 exit_code = run_cmd(request.sid, data['cmd'], data['id'])
                 complete_response = {
                     'id': data['id'],
