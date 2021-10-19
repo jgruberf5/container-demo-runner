@@ -118,10 +118,16 @@ def destroy_pid(pid):
         del process_runner['stdout_kill_event']
         del process_runner['stderr_thread']
         del process_runner['stderr_kill_event']
-        os.kill(pid, signal.SIGKILL)
+        parent = psutil.Process(pid)
+        for child in parent.children(recursive=True):
+            child.kill()
+        parent.kill()
         del runners[pid]
     else:
-        os.kill(pid, signal.SIGKILL)
+        parent = psutil.Process(pid)
+        for child in parent.children(recursive=True):
+            child.kill()
+        parent.kill()
 
 
 def destroy_all_processes_for_sid(sid):
