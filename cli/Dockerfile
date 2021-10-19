@@ -7,7 +7,8 @@ RUN apt-get update && \
     apt-get install --no-install-recommends -y git
 
 RUN git clone https://github.com/jgruberf5/container-demo-runner.git
-RUN pip3 install python-socketio
+RUN pip3 install python-socketio requests websocket-client
+
 ENV URL '--help'
 ENV CMD ''
 
