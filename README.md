@@ -231,3 +231,19 @@ k8s_dc, k8s_dallas, 15694.005, 272.500, 271.500, 162.000, 264.000
 k8s_dc, k8s_dallas, 22040.820, 183.500, 194.000, 271.000, 184.000
 k8s_dc, k8s_dallas, 21961.309, 165.000, 167.000, 253.000, 176.000
 ```
+
+## Running the Same Test as the Web Client
+
+The web interface has some pre-built commands to run. You can get the same results by issuing the commands below:
+
+| Web Command | CLI Command |
+| ---------- | ---------- |
+| Show Routes | `ip route` |
+| Show IP addresses | `ip addr` |
+| Show Hosts | `cat /etc/hosts` |
+| Show Environment | `env` |
+| Show Resolver | `cat /etc/resolv.conf` |
+| ICMP Ping | `ping -c [count] [target]` |
+| TCP Ping | `tcping -x [count] [target] [port]` |
+| DNS Lookup | `dig @[dnshost] [target] [type]` |
+| HTTP GET (statistics) | `curl -H 'Connection: close' -k -L -s -o '/dev/null' -w ' http_status_code: %{http_code}\n content_type: %{content_type}%\n dns_resolution: %{time_namelookup}\n tcp_established: %{time_connect}\n ssl_handshake_done: %{time_appconnect}\n TTFB: %{time_starttransfer}\n speed_download: %{speed_download}\n speed_upload: %{speed_upload}\n total_time: %{time_total}\n size: %{size_download}\n\n' [url]`
