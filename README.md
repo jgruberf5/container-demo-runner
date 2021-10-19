@@ -123,10 +123,31 @@ The repository also includes a command line web service client. To run the comma
 pip3 install -r requirements.txt
 ./demo-runner.py
 ```
-Default options can be see by issuing the `--help` option:
+
+There is also a `Dockerfile` in the `cli` directory that can be used to build a container of the command line client.
+
+```bash
+docker build --rm -t container-demo-cli:latest .
+```
+
+Once built, the container client can be run via docker command. If you include the `-i` and `-t` output and arguments will be interactive with your current shell.
+
+```bash
+docker run -i -t --rm container-demo-cli:latest 'http://ibm-k8s-us-east-1.appinsights.io:30080' 'ping -c 5 www.google.com'
+```
+
+Default options can be seen by issuing the `--help` argument:
 
 ```bash
 $ ./demo-runner.py --help
+```
+
+or
+
+```
+$ docker run -i -t --rm container-demo-cli:latest --help
+```
+
 usage: demo-runner.py [options] url cmd
 
 run a remote command on a demo-runner server
@@ -179,6 +200,19 @@ PING www.google.com (142.250.68.132) 56(84) bytes of data.
 5 packets transmitted, 5 received, 0% packet loss, time 4006ms
 rtt min/avg/max/mdev = 30.790/30.823/30.840/0.018 ms
 ```
+
+Running client test in the container is just as easy:
+
+```bash
+docker run -i -t --rm container-demo-cli:latest http://ibm-k8s-us-east-1.appinsights.io 'ping -c 5 www.google.com'
+PING www.google.com (142.250.115.103) 56(84) bytes of data.
+64 bytes from rq-in-f103.1e100.net (142.250.115.103): icmp_seq=1 ttl=105 time=30.5 ms
+64 bytes from rq-in-f103.1e100.net (142.250.115.103): icmp_seq=2 ttl=105 time=30.5 ms
+64 bytes from rq-in-f103.1e100.net (142.250.115.103): icmp_seq=3 ttl=105 time=30.5 ms
+64 bytes from rq-in-f103.1e100.net (142.250.115.103): icmp_seq=4 ttl=105 time=30.5 ms
+64 bytes from rq-in-f103.1e100.net (142.250.115.103): icmp_seq=5 ttl=105 time=30.4 ms
+```
+
 
 If you want to run the embedded performance test, there are addition command line options to define to format the output report.
 
