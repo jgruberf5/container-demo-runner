@@ -144,10 +144,11 @@ $ ./demo-runner.py --help
 
 or
 
-```
+```bash
 $ docker run -i -t --rm container-demo-cli:latest --help
 ```
 
+```bash
 usage: demo-runner.py [options] url cmd
 
 run a remote command on a demo-runner server
