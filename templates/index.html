@@ -181,7 +181,7 @@
                             <label class='text-secondary m-2'>count:</label>
                             <div class="col-sm-2 m-2">
                                 <select class="form-control" id='tcpingcount'>
-                                    <option value=1>1</option>
+                                    <option value=1 selected>1</option>
                                     <option value=5>5</option>
                                     <option value=10>10</option>
                                     <option value=50>50</option>
@@ -656,6 +656,8 @@
                     target: $('#tcpinghost').val(),
                     cmd: [
                         'tcping',
+                        '-x',
+                        '2',
                         $('#tcpinghost').val(),
                         $('#tcpingport').val()
                     ]
@@ -664,7 +666,7 @@
                     cmd.cmd = [
                         'tcping',
                         '-x',
-                        tcpingcount,
+                        (parseInt(tcpingcount) + 1).toString(),
                         $('#tcpinghost').val(),
                         $('#tcpingport').val()
                     ]
