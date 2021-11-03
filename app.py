@@ -285,8 +285,26 @@ def performance_test(sid, id, sourcelabel, targetlabel, target, port, runcount, 
         websocket.emit('commandResponse', error_response)
         return -1
 
-
+# you can customize the default application by adding your
+# content to the static / templates dir and changing the 
+# route below
 @app.route('/')
+def root_route_ui():
+    host = request.host
+    if str.find(host, ':') > 0:
+        host = str.split(host, ':')[0]
+    banner_text = os.getenv('BANNER', '')
+    banner_background_color = "#%s" % os.getenv('BANNER_COLOR', '000000')
+    banner_text_color = '#%s' % os.getenv('BANNER_TEXT_COLOR', 'ffffff')
+    return render_template(
+        'diag_index.html',
+        hostname='connecting...',
+        banner_text=(banner_text),
+        banner_background_color=banner_background_color,
+        banner_text_color=banner_text_color)
+
+
+@app.route('/diag')
 def runner_ui():
     host = request.host
     if str.find(host, ':') > 0:
@@ -295,7 +313,7 @@ def runner_ui():
     banner_background_color = "#%s" % os.getenv('BANNER_COLOR', '000000')
     banner_text_color = '#%s' % os.getenv('BANNER_TEXT_COLOR', 'ffffff')
     return render_template(
-        'index.html',
+        'diag_index.html',
         hostname='connecting...',
         banner_text=(banner_text),
         banner_background_color=banner_background_color,
@@ -322,6 +340,33 @@ def get_resource(path):  # pragma: no cover
     mimetype = mimetypes.get(ext, "text/html")
     content = get_file(complete_path)
     return Response(content, mimetype=mimetype)
+
+
+@app.route('/dump')
+def dump_ui():
+    banner_text = os.getenv('BANNER', '')
+    banner_background_color = "#%s" % os.getenv('BANNER_COLOR', '000000')
+    banner_text_color = '#%s' % os.getenv('BANNER_TEXT_COLOR', 'ffffff')
+    request_header_out_string = ""
+    request_env_out_string = ""
+    for (header, value) in request.headers:
+        request_header_out_string = "%s%s: %s\n" % (
+            request_header_out_string, header, value)
+    for e in request.environ:
+        request_env_out_string = "%s%s: %s\n" % (
+            request_env_out_string,
+            e,
+            request.environ[e])
+    return render_template(
+        'dump_index.html',
+        hostname=getHostname(),
+        banner_text=(banner_text),
+        banner_background_color=banner_background_color,
+        banner_text_color=banner_text_color,
+        requestmethod=request.method,
+        requesturl=request.url,
+        requestheaders=request_header_out_string,
+        requestenv=request_env_out_string)
 
 
 @websocket.on('connect')
