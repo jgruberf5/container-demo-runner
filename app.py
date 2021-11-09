@@ -352,7 +352,8 @@ def upload():
         return redirect('/upload')
     file_listing = "<ul>"
     for f in os.listdir(UPLOAD_FOLDER):
-        file_listing = "%s<li><a href='/upload/%s'>%s</a>" % (file_listing, f, f)
+        file_listing = "%s<li><a href='/upload/%s'>%s</a>" % (
+            file_listing, f, f)
     file_listing = "%s</ul>" % file_listing
     return """
     <!doctype html>
@@ -369,6 +370,23 @@ def upload():
     </pre>
     </div
     """ % (file_listing)
+
+
+@app.route('/upload/<path:path>')
+def get_uploaded_file(path):  # pragma: no cover
+    mimetypes = {
+        ".css": "text/css",
+        ".html": "text/html",
+        ".htm": "text/html",
+        ".js": "application/javascript",
+        ".jpeg": "image/jpeg",
+        ".ico": "image/x-icon"
+    }
+    complete_path = os.path.join(UPLOAD_FOLDER, path)
+    ext = os.path.splitext(path)[1]
+    mimetype = mimetypes.get(ext, "application/binary")
+    content = get_file(complete_path)
+    return Response(content, mimetype=mimetype)
 
 
 @app.route('/', defaults={'path': ''})
