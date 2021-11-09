@@ -3,6 +3,8 @@
 import json
 import shlex
 import subprocess
+from werkzeug.utils import redirect
+from werkzeug.utils import secure_filename
 import yaml
 import os
 import signal
@@ -14,7 +16,7 @@ import dns.resolver
 
 from urllib.parse import urlparse
 
-from flask import Flask, request, render_template, Response, send_from_directory
+from flask import Flask, request, render_template, Response, send_from_directory, flash
 from flask_compress import Compress
 from flask_socketio import SocketIO, emit
 
@@ -24,6 +26,8 @@ CONFIG_FILE = os.getenv('CONFIG_FILE', './config.yaml')
 CONFIG_MAP_DIR = '/etc/container-demo-runner'
 NAMESPACE_FILE = '/var/run/secrets/kubernetes.io/serviceaccount/namespace'
 PUPPETEER_HOME = os.getenv('PYPPETEER_HOME', '/tmp/webscreenshots')
+
+UPLOAD_FOLDER = "%s/static" % (os.path.dirname(os.path.realpath(__file__)))
 
 config = {}
 
@@ -55,6 +59,7 @@ if 'host_entries' in config:
         eh.write('\n#### end entries added by container-demo-runner ####\n')
 
 app = Flask(__name__)
+
 Compress(app)
 websocket = SocketIO(app, cors_allowed_origins='*', async_mode='threading')
 
@@ -286,8 +291,10 @@ def performance_test(sid, id, sourcelabel, targetlabel, target, port, runcount, 
         return -1
 
 # you can customize the default application by adding your
-# content to the static / templates dir and changing the 
+# content to the static / templates dir and changing the
 # route below
+
+
 @app.route('/')
 def root_route_ui():
     host = request.host
@@ -323,6 +330,30 @@ def runner_ui():
 @app.route('/webscreenshots/<path:name>')
 def send_screenshot(name):
     return send_from_directory(PUPPETEER_HOME, name, mimetype='image/jepg')
+
+
+@app.route('/upload', methods=['POST', 'GET'])
+def upload():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect('/upload')
+        file = request.files['file']
+        if file.filename == '':
+            flash('No upload file name selected')
+            return redirect('/upload')
+        fn = secure_filename(file.filename)
+        file.save(os.path.join(UPLOAD_FOLDER, fn))
+        return redirect('/')
+    return '''
+    <!doctype html>
+    <title>Upload new File</title>
+    <h1>Upload new File</h1>
+    <form method=post enctype=multipart/form-data>
+      <input type=file name=file>
+      <input type=submit value=Upload>
+    </form>
+    '''
 
 
 @app.route('/', defaults={'path': ''})
