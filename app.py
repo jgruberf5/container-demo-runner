@@ -341,15 +341,16 @@ def send_screenshot(name):
 def upload():
     if request.method == 'POST':
         if 'file' not in request.files:
-            flash('No file part')
-            return redirect('/upload')
+            response = Response()
+            response.status_code = 404
+            return response
         file = request.files['file']
         if file.filename == '':
-            flash('No upload file name selected')
-            return redirect('/upload')
+            response = Response()
+            response.status_code = 404
+            return response
         fn = secure_filename(file.filename)
         file.save(os.path.join(UPLOAD_FOLDER, fn))
-        return redirect('/upload')
     file_listing = "<ul>"
     for f in os.listdir(UPLOAD_FOLDER):
         file_listing = "%s<li><a href='/upload/%s'>%s</a>" % (
