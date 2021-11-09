@@ -14,6 +14,8 @@ import re
 import base64
 import dns.resolver
 
+import tempfile
+
 from urllib.parse import urlparse
 
 from flask import Flask, request, render_template, Response, send_from_directory, flash
@@ -27,11 +29,10 @@ CONFIG_MAP_DIR = '/etc/container-demo-runner'
 NAMESPACE_FILE = '/var/run/secrets/kubernetes.io/serviceaccount/namespace'
 PUPPETEER_HOME = os.getenv('PYPPETEER_HOME', '/tmp/webscreenshots')
 
-UPLOAD_FOLDER = "%s/uploads" % (os.path.dirname(os.path.realpath(__file__)))
+UPLOAD_FOLDER = "%s/uploads" % (tempfile.gettempdir())
 
 if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-    os.chmod(UPLOAD_FOLDER, 777)
+    os.makedirs(UPLOAD_FOLDER, mode=0o777)
 
 config = {}
 
