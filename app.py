@@ -27,7 +27,11 @@ CONFIG_MAP_DIR = '/etc/container-demo-runner'
 NAMESPACE_FILE = '/var/run/secrets/kubernetes.io/serviceaccount/namespace'
 PUPPETEER_HOME = os.getenv('PYPPETEER_HOME', '/tmp/webscreenshots')
 
-UPLOAD_FOLDER = "%s/static" % (os.path.dirname(os.path.realpath(__file__)))
+UPLOAD_FOLDER = "%s/uploads" % (os.path.dirname(os.path.realpath(__file__)))
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+    os.chmod(UPLOAD_FOLDER, 777)
 
 config = {}
 
@@ -344,8 +348,12 @@ def upload():
             return redirect('/upload')
         fn = secure_filename(file.filename)
         file.save(os.path.join(UPLOAD_FOLDER, fn))
-        return redirect('/')
-    return '''
+        return redirect('/upload')
+    file_listing = "<ul>"
+    for f in os.listdir(UPLOAD_FOLDER):
+        file_listing = "%s<li><a href='/upload/%s'>%s</a>" % (file_listing, f, f)
+    file_listing = "%s</ul>" % file_listing
+    return """
     <!doctype html>
     <title>Upload new File</title>
     <h1>Upload new File</h1>
@@ -353,7 +361,13 @@ def upload():
       <input type=file name=file>
       <input type=submit value=Upload>
     </form>
-    '''
+    <hr/>
+    <div>
+    <pre>
+    %s
+    </pre>
+    </div
+    """ % (file_listing)
 
 
 @app.route('/', defaults={'path': ''})

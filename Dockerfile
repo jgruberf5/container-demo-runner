@@ -80,6 +80,8 @@ RUN git clone https://github.com/jgruberf5/container-demo-runner.git
 
 RUN pip3 install -r /container-demo-runner/requirements.txt
 
+RUN mkdir -p /container-demo-runner/uploads && chmod 0777 /container-demo-runner/uploads
+
 EXPOSE 8080
 EXPOSE 5001
 EXPOSE 5201
