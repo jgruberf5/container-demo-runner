@@ -3,22 +3,20 @@
 import json
 import shlex
 import subprocess
-from werkzeug.utils import redirect
-from werkzeug.utils import secure_filename
 import yaml
 import os
 import signal
+import tempfile
 import psutil
 import socket
 import re
 import base64
 import dns.resolver
 
-import tempfile
-
+from werkzeug.utils import secure_filename
 from urllib.parse import urlparse
 
-from flask import Flask, request, render_template, Response, send_from_directory, flash
+from flask import Flask, request, render_template, Response, send_from_directory
 from flask_compress import Compress
 from flask_socketio import SocketIO, emit
 
@@ -340,17 +338,11 @@ def send_screenshot(name):
 @app.route('/upload', methods=['POST', 'GET'])
 def upload():
     if request.method == 'POST':
-        if 'file' not in request.files:
-            response = Response()
-            response.status_code = 404
-            return response
-        file = request.files['file']
-        if file.filename == '':
-            response = Response()
-            response.status_code = 404
-            return response
-        fn = secure_filename(file.filename)
-        file.save(os.path.join(UPLOAD_FOLDER, fn))
+        if 'file' in request.files:
+            file = request.files['file']
+            if file.filename:
+                fn = secure_filename(file.filename)
+                file.save(os.path.join(UPLOAD_FOLDER, fn))
     file_listing = "<ul>"
     for f in os.listdir(UPLOAD_FOLDER):
         file_listing = "%s<li><a href='/upload/%s'>%s</a>" % (
