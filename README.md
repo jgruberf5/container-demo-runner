@@ -16,6 +16,12 @@ Then open a web browser to `http://localhost:8080` .
 
 The UI will show the remote hostname (or K8s namespace/hostname) in green in the top right corner when the service is connected. The settings (gear) icon in the top far right will let you change which backend websocket command host you are connected to.
 
+If you wish to server a static web site by default, you can mount your static content with an `index.html` file to `/app`. You should use either relative URLs or prefix all your URLs paths with `/app`.
+
+```bash
+docker run --rm -p 8080:8080 -p 5001:5001 -p 11111:11111 -v /var/www/html:/app --name container-demo-runner jgruberf5/container-demo-runner:latest
+```
+
 ## Configuration
 
 The services will look for the presence of a `/etc/config.yaml` file. The default configuration YAML is as follows:

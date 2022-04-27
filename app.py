@@ -16,7 +16,7 @@ import dns.resolver
 from werkzeug.utils import secure_filename
 from urllib.parse import urlparse
 
-from flask import Flask, request, render_template, Response, send_from_directory
+from flask import Flask, request, redirect, render_template, Response, send_from_directory
 from flask_compress import Compress
 from flask_socketio import SocketIO, emit
 
@@ -300,18 +300,10 @@ def performance_test(sid, id, sourcelabel, targetlabel, target, port, runcount, 
 
 @app.route('/')
 def root_route_ui():
-    host = request.host
-    if str.find(host, ':') > 0:
-        host = str.split(host, ':')[0]
-    banner_text = os.getenv('BANNER', '')
-    banner_background_color = "#%s" % os.getenv('BANNER_COLOR', '000000')
-    banner_text_color = '#%s' % os.getenv('BANNER_TEXT_COLOR', 'ffffff')
-    return render_template(
-        'diag_index.html',
-        hostname='connecting...',
-        banner_text=(banner_text),
-        banner_background_color=banner_background_color,
-        banner_text_color=banner_text_color)
+    if os.path.exists('/app/index.html'):
+        return redirect('/app/index.html')
+    else:
+        return redirect('/diag')
 
 
 @app.route('/diag')
@@ -382,23 +374,6 @@ def get_uploaded_file(path):  # pragma: no cover
     return Response(content, mimetype=mimetype)
 
 
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def get_resource(path):  # pragma: no cover
-    mimetypes = {
-        ".css": "text/css",
-        ".html": "text/html",
-        ".js": "application/javascript",
-        ".jpeg": "image/jpeg",
-        ".ico": "image/x-icon"
-    }
-    complete_path = os.path.join(root_dir(), path)
-    ext = os.path.splitext(path)[1]
-    mimetype = mimetypes.get(ext, "text/html")
-    content = get_file(complete_path)
-    return Response(content, mimetype=mimetype)
-
-
 @app.route('/dump')
 def dump_ui():
     banner_text = os.getenv('BANNER', '')
@@ -424,6 +399,39 @@ def dump_ui():
         requesturl=request.url,
         requestheaders=request_header_out_string,
         requestenv=request_env_out_string)
+
+
+@app.route('/app/<path:path>')
+def get_app_resources(path):  # pragma: no cover
+    mimetypes = {
+        ".css": "text/css",
+        ".html": "text/html",
+        ".js": "application/javascript",
+        ".jpeg": "image/jpeg",
+        ".ico": "image/x-icon"
+    }
+    complete_path = os.path.join('/app', path)
+    ext = os.path.splitext(path)[1]
+    mimetype = mimetypes.get(ext, "text/html")
+    content = get_file(complete_path)
+    return Response(content, mimetype=mimetype)
+
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def get_resource(path):  # pragma: no cover
+    mimetypes = {
+        ".css": "text/css",
+        ".html": "text/html",
+        ".js": "application/javascript",
+        ".jpeg": "image/jpeg",
+        ".ico": "image/x-icon"
+    }
+    complete_path = os.path.join(root_dir(), path)
+    ext = os.path.splitext(path)[1]
+    mimetype = mimetypes.get(ext, "text/html")
+    content = get_file(complete_path)
+    return Response(content, mimetype=mimetype)
 
 
 @websocket.on('connect')

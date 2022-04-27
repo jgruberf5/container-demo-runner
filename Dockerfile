@@ -85,4 +85,6 @@ EXPOSE 5001
 EXPOSE 5201
 EXPOSE 11111
 
+VOLUME /app
+
 ENTRYPOINT [ "/container-demo-runner/run.sh" ]
